@@ -2,12 +2,16 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 interface Twibbon {
   id: number;
   name: string;
   description: string;
+  filename: string;
   url: string;
+  downloads: number;
+  shares: number;
   created_at: string;
 }
 
@@ -31,15 +35,13 @@ export default function TwibbonList({ twibbons, loading }: TwibbonListProps) {
   };
 
   return (
-    <section className="bg-white min-h-screen -mt-50">
-      <div className="container px-4 py-12 max-w-7xl w-full mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-3xl font-bold text-[#0268f8] flex items-center">
-            <span className="mr-2">🔥</span> Lagi Viral
+    <section className="bg-white-500 mb-11">
+      <div className="container px-4 py-4 md:py-1 max-w-5xl w-full mx-auto">
+        <div className="flex items-center justify-start mb-6 md:mb-8">
+          <h2 className="text-2xl md:text-5xl font-bold my-4 md:my-8 text-[#0268f8] flex items-center">
+            <Image src="/images/fire2.png" alt="Viral Icon" width={48} height={48} className="mr-3 w-40 h-9 md:w-auto md:h-auto md:mr-5" />
+            <span className="text-[#0268f8]">Lagi Viral</span>
           </h2>
-          <Link href="/jelajahi" className="text-[#0268f8] hover:text-blue-700 font-medium">
-            Lihat Semua →
-          </Link>
         </div>
 
         {loading ? (
@@ -47,41 +49,59 @@ export default function TwibbonList({ twibbons, loading }: TwibbonListProps) {
         ) : twibbons.length === 0 ? (
           <p className="text-center text-gray-600">No twibbons found. Add some from the admin panel!</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {twibbons.map((twibbon) => (
-              <div key={twibbon.id} className="bg-white rounded-xl shadow-lg overflow-hidden transition-transform duration-200 hover:scale-105">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8">
+            {twibbons.map((twibbon, index) => (
+              <motion.div
+                key={twibbon.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{
+                  scale: 1.05,
+                  y: -5,
+                }}
+                whileTap={{ scale: 0.98 }}
+                className="bg-white rounded-xl overflow-hidden cursor-pointer"
+              >
                 <Link href={`/twibbon/${twibbon.id}`}>
-                  <div className="aspect-square relative w-full rounded-t-xl overflow-hidden">
-                    <Image src={twibbon.url} alt={twibbon.name} fill className="object-cover" />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-lg text-gray-800 mb-2">{twibbon.name}</h3>
-                    <div className="flex items-center justify-between text-gray-600 text-sm">
-                      <div className="flex items-center">
-                        <div className="w-6 h-6 rounded-full bg-gray-200 mr-2 flex items-center justify-center text-xs text-gray-500">PP</div>
-                        <span>Akun Creator</span>
-                      </div>
-                      <div className="flex items-center">
-                        <svg className="w-4 h-4 mr-1 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                        </svg>
-                        <span>0 dukungan</span>
-                      </div>
+                  <motion.div className="aspect-square relative w-full overflow-hidden" whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}>
+                    <Image src={twibbon.url} alt={twibbon.name} fill className="object-cover" sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw" />
+                  </motion.div>
+                  <div className="p-2 md:p-4">
+                    {/* Judul dengan scroll kalo kepanjangan */}
+                    <motion.h3 className="font-semibold text-sm md:text-lg text-gray-800 mb-2 md:mb-3 truncate hover:text-clip hover:whitespace-normal" whileHover={{ color: "#0268f8" }} transition={{ duration: 0.2 }}>
+                      {twibbon.name || "Judul Twibbon disini ea.."}
+                    </motion.h3>
+
+                    {/* Row 1: Akun Creator */}
+                    <div className="flex items-center mb-1 md:mb-2">
+                      <div className="w-4 h-4 md:w-6 md:h-6 rounded-full bg-gray-200 mr-1 md:mr-2 flex items-center justify-center text-xs text-gray-500">PP</div>
+                      <span className="text-gray-600 text-xs md:text-sm">Akun Creator</span>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">{formatTimeAgo(twibbon.created_at)}</p>
+
+                    {/* Row 2: Jumlah Dukungan */}
+                    <div className="flex items-center mb-1 md:mb-2">
+                      <Image src="/images/icon-orang.png" alt="Icon Orang" width={12} height={12} className="mr-1 md:mr-2 w-3 h-3 md:w-auto md:h-auto" />
+                      <span className="text-gray-600 text-xs md:text-sm">{(twibbon.downloads + twibbon.shares).toLocaleString()} dukungan</span>
+                    </div>
+
+                    {/* Row 3: Waktu Pembuatan */}
+                    <div className="flex items-center">
+                      <Image src="/images/icon-jam.png" alt="Icon Jam" width={12} height={12} className="mr-1 md:mr-2 w-3 h-3 md:w-auto md:h-auto" />
+                      <span className="text-gray-600 text-xs md:text-sm">{formatTimeAgo(twibbon.created_at)}</span>
+                    </div>
                   </div>
                 </Link>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
 
         {/* Empty State */}
         {!loading && twibbons.length === 0 && (
-          <div className="text-center py-12">
+          <div className="text-center py-8 md:py-12">
             <div className="text-gray-400 mb-4">
-              <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="mx-auto h-8 w-8 md:h-12 md:w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -90,10 +110,30 @@ export default function TwibbonList({ twibbons, loading }: TwibbonListProps) {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Belum ada twibbon viral</h3>
-            <p className="text-gray-600">Twibbon akan muncul di sini setelah ditambahkan oleh admin.</p>
+            <h3 className="text-base md:text-lg font-medium text-gray-900 mb-2">Belum ada twibbon viral</h3>
+            <p className="text-gray-600 text-sm md:text-base">Twibbon akan muncul di sini setelah ditambahkan oleh admin.</p>
           </div>
         )}
+      </div>
+      <div className="flex justify-center w-full mt-6 md:mt-8">
+        <motion.button
+          whileHover={{
+            scale: 1.05,
+            boxShadow: "0px 8px 25px rgba(255, 102, 0, 0.4)",
+          }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: "spring", stiffness: 300 }}
+          className="relative px-4 md:px-6 py-2 md:py-3 rounded-full bg-[#ff6600] text-white font-semibold overflow-hidden group text-sm md:text-base"
+        >
+          {/* Ripple animation */}
+          <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition duration-500"></span>
+
+          {/* Text */}
+          <span className="relative z-10 flex items-center">Selengkapnya</span>
+
+          {/* Glow effect */}
+          <span className="absolute -inset-1 bg-gradient-to-r from-orange-400 to-orange-600 rounded-full blur opacity-0 group-hover:opacity-50 transition duration-500"></span>
+        </motion.button>
       </div>
     </section>
   );

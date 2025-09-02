@@ -9,6 +9,8 @@ import Navbar from "@/components/halamanutama/Navbar";
 import Hero from "@/components/halamanutama/Hero";
 import TwibbonList from "@/components/halamanutama/TwibbonList";
 import FeedbackButton from "@/components/halamanutama/FeedbackButton";
+import Jumbotron from "@/components/halamanutama/Jumbotron";
+import Footer from "@/components/halamanutama/Footer";
 
 interface Twibbon {
   id: number;
@@ -16,6 +18,8 @@ interface Twibbon {
   description: string;
   filename: string;
   url: string;
+  downloads: number;
+  shares: number;
   created_at: string;
 }
 
@@ -75,16 +79,22 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0268f8] text-white">
+    <div className="min-h-9 bg-white text-white ">
       {/* Navbar */}
       <Navbar />
 
       {/* Hero Section */}
-      <Hero />
-
+      <div className="-mt-5">
+        <Hero />
+      </div>
       {/* Twibbon List Section */}
       <TwibbonList twibbons={twibbons} loading={loading} />
 
+      {/* Jumbotron Section */}
+      <Jumbotron />
+
+      {/* footer */}
+      <Footer />
       {/* Feedback Button */}
       <FeedbackButton onOpenModal={() => setShowFeedbackModal(true)} />
 

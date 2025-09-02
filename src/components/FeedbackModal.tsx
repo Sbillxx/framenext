@@ -90,7 +90,7 @@ export default function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
                 type="text"
                 value={formData.from}
                 onChange={(e) => setFormData({ ...formData, from: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                 placeholder="Masukkan nama Anda"
                 required
               />
@@ -101,7 +101,7 @@ export default function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
               <textarea
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                 rows={4}
                 placeholder="Tulis feedback Anda di sini..."
                 required

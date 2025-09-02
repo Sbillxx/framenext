@@ -4,15 +4,25 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "framer-motion";
+import Cropper from "react-easy-crop";
 
 interface Twibbon {
   id: number;
-  title: string;
+  name: string;
   description: string;
-  imageUrl: string;
+  filename: string;
+  url: string;
   downloads: number;
   shares: number;
-  createdAt: string;
+  created_at: string;
+}
+
+interface CropArea {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
 export default function TwibbonDetail() {
@@ -23,6 +33,10 @@ export default function TwibbonDetail() {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [frameRatio, setFrameRatio] = useState<{ width: number; height: number }>({ width: 1, height: 1 });
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<CropArea | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -52,19 +66,86 @@ export default function TwibbonDetail() {
     }
   }, [params?.id, fetchTwibbon]);
 
+  // Calculate frame ratio when twibbon loads
+  useEffect(() => {
+    if (twibbon?.url) {
+      const img = new window.Image();
+      img.onload = () => {
+        setFrameRatio({ width: img.width, height: img.height });
+      };
+      img.onerror = () => {
+        console.error("Failed to load image:", twibbon.url);
+        setFrameRatio({ width: 1, height: 1 }); // Default ratio
+      };
+      img.src = twibbon.url;
+    }
+  }, [twibbon?.url]);
+
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
         setUserImage(e.target?.result as string);
+        // Reset crop and zoom when new image is uploaded
+        setCrop({ x: 0, y: 0 });
+        setZoom(1);
+        setCroppedAreaPixels(null);
       };
       reader.readAsDataURL(file);
     }
   };
 
+  const onCropComplete = useCallback((_: unknown, areaPixels: CropArea) => {
+    setCroppedAreaPixels(areaPixels);
+  }, []);
+
+  const detectPhotoArea = (canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) => {
+    // Get image data to analyze transparency
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    let minX = canvas.width;
+    let minY = canvas.height;
+    let maxX = 0;
+    let maxY = 0;
+
+    // Scan for transparent areas (alpha < 255)
+    for (let y = 0; y < canvas.height; y++) {
+      for (let x = 0; x < canvas.width; x++) {
+        const index = (y * canvas.width + x) * 4;
+        const alpha = data[index + 3];
+
+        // If pixel is transparent or very light
+        if (alpha < 200) {
+          minX = Math.min(minX, x);
+          minY = Math.min(minY, y);
+          maxX = Math.max(maxX, x);
+          maxY = Math.max(maxY, y);
+        }
+      }
+    }
+
+    // If no transparent area found, use default area
+    if (minX >= maxX || minY >= maxY) {
+      return {
+        x: canvas.width * 0.1,
+        y: canvas.height * 0.2,
+        width: canvas.width * 0.8,
+        height: canvas.height * 0.6,
+      };
+    }
+
+    return {
+      x: minX,
+      y: minY,
+      width: maxX - minX,
+      height: maxY - minY,
+    };
+  };
+
   const createTwibbon = async () => {
-    if (!twibbon || !userImage || !canvasRef.current) return;
+    if (!twibbon || !userImage || !canvasRef.current || !croppedAreaPixels) return;
 
     setProcessing(true);
 
@@ -73,28 +154,37 @@ export default function TwibbonDetail() {
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      // Set canvas size
-      canvas.width = 800;
-      canvas.height = 800;
+      // Set canvas size based on frame ratio
+      const maxSize = 800;
+      let canvasWidth, canvasHeight;
+
+      if (frameRatio.width > frameRatio.height) {
+        canvasWidth = maxSize;
+        canvasHeight = (maxSize * frameRatio.height) / frameRatio.width;
+      } else {
+        canvasHeight = maxSize;
+        canvasWidth = (maxSize * frameRatio.width) / frameRatio.height;
+      }
+
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
 
       // Load twibbon frame
       const frameImg = new window.Image();
       frameImg.crossOrigin = "anonymous";
       frameImg.onload = () => {
-        // Draw frame
-        ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+        // Detect the photo area in the twibbon
+        const photoArea = detectPhotoArea(canvas, ctx);
 
         // Load user image
         const userImg = new window.Image();
         userImg.crossOrigin = "anonymous";
         userImg.onload = () => {
-          // Calculate position for user image (center)
-          const userSize = Math.min(canvas.width * 0.6, canvas.height * 0.6);
-          const x = (canvas.width - userSize) / 2;
-          const y = (canvas.height - userSize) / 2;
+          // Draw the cropped user image first (as background)
+          ctx.drawImage(userImg, croppedAreaPixels.x, croppedAreaPixels.y, croppedAreaPixels.width, croppedAreaPixels.height, photoArea.x, photoArea.y, photoArea.width, photoArea.height);
 
-          // Draw user image
-          ctx.drawImage(userImg, x, y, userSize, userSize);
+          // Then draw the twibbon frame on top (this will overlay the frame)
+          ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
 
           // Convert to blob and download
           canvas.toBlob((blob) => {
@@ -102,7 +192,7 @@ export default function TwibbonDetail() {
               const url = URL.createObjectURL(blob);
               const a = document.createElement("a");
               a.href = url;
-              a.download = `twibbon-${twibbon.title}.png`;
+              a.download = `twibbon-${twibbon.name}.png`;
               document.body.appendChild(a);
               a.click();
               document.body.removeChild(a);
@@ -118,7 +208,7 @@ export default function TwibbonDetail() {
         };
         userImg.src = userImage;
       };
-      frameImg.src = twibbon.imageUrl;
+      frameImg.src = twibbon.url;
     } catch (error) {
       console.error("Error creating twibbon:", error);
     } finally {
@@ -148,7 +238,7 @@ export default function TwibbonDetail() {
     if (!id) return;
 
     const shareUrl = `${window.location.origin}/twibbon/${id}`;
-    const shareText = `Check out this awesome twibbon: ${twibbon?.title}`;
+    const shareText = `Check out this awesome twibbon: ${twibbon?.name}`;
 
     let shareLink = "";
 
@@ -190,20 +280,34 @@ export default function TwibbonDetail() {
     }
   };
 
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+    if (diffInDays === 0) return "today";
+    if (diffInDays === 1) return "yesterday";
+    if (diffInDays < 7) return `${diffInDays} days ago`;
+    if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
+    if (diffInDays < 365) return `${Math.floor(diffInDays / 30)} months ago`;
+    return `${Math.floor(diffInDays / 365)} years ago`;
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-[#0268f8] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
       </div>
     );
   }
 
   if (!twibbon) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Twibbon tidak ditemukan</h2>
-          <Link href="/" className="text-blue-600 hover:text-blue-800">
+      <div className="min-h-screen bg-[#0268f8] flex items-center justify-center">
+        <div className="text-center text-white">
+          <h2 className="text-2xl font-bold mb-4">Twibbon tidak ditemukan</h2>
+          <Link href="/" className="text-white hover:text-gray-200 underline">
             Kembali ke Beranda
           </Link>
         </div>
@@ -212,85 +316,171 @@ export default function TwibbonDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <Link href="/" className="text-2xl font-bold text-gray-900">
-              TWIBON
-            </Link>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
-                {twibbon.downloads} downloads • {twibbon.shares} shares
-              </span>
+    <div className="min-h-screen bg-[#0268f8]">
+      {/* Main Content */}
+      <div className="px-4 py-6 flex items-center justify-center min-h-screen">
+        <div className="w-full max-w-lg">
+          <header className="bg-[#0268f8] px-4 mb-6">
+            <div className="flex justify-between items-center">
+              <Link href="/" className="text-2xl font-bold text-white">
+                <Image src="/images/Logo Frameid White.png" alt="Frame ID Logo" width={200} height={200} className="h-6 w-auto" priority />
+              </Link>
+              <Link href="/" className="text-white">
+                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                </svg>
+              </Link>
             </div>
-          </div>
-        </div>
-      </header>
+          </header>
+          <motion.div className="bg-white rounded-4xl p-8 shadow-lg" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+            {/* Creator Info */}
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-8 h-8 bg-gray-300 rounded-full mr-3"></div>
+              <span className="text-sm text-gray-600">Akun Creator</span>
+            </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Twibbon Info */}
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">{twibbon.title}</h1>
-            {twibbon.description && <p className="text-gray-600 mb-6">{twibbon.description}</p>}
+            {/* Title */}
+            <h1 className="text-2xl font-bold text-gray-900 mb-8 leading-tight text-center px-4">{twibbon.name}</h1>
 
-            {/* Twibbon Frame Preview */}
-            <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-              <h3 className="text-lg font-semibold mb-4">Frame Twibbon</h3>
-              <div className="relative w-full h-64 bg-gray-200 rounded-lg overflow-hidden">
-                <Image src={twibbon.imageUrl} alt={twibbon.title} fill className="object-contain" />
+            {/* Twibbon Frame with Cropper */}
+            <div className="mb-8">
+              <div
+                className="relative rounded-xl overflow-hidden w-full bg-gray-100"
+                style={{
+                  aspectRatio: `${frameRatio.width} / ${frameRatio.height}`,
+                  maxHeight: "500px",
+                }}
+              >
+                {userImage ? (
+                  <div className="relative w-full h-full">
+                    <Cropper
+                      image={userImage}
+                      crop={crop}
+                      zoom={zoom}
+                      aspect={frameRatio.width / frameRatio.height}
+                      onCropChange={setCrop}
+                      onZoomChange={setZoom}
+                      onCropComplete={onCropComplete}
+                      showGrid={false}
+                      style={{
+                        containerStyle: {
+                          width: "100%",
+                          height: "100%",
+                          backgroundColor: "transparent",
+                        },
+                        cropAreaStyle: {
+                          border: "2px solid #fff",
+                          boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.3)",
+                        },
+                      }}
+                    />
+                    {/* Twibbon Frame Overlay */}
+                    <div className="absolute inset-0 pointer-events-none">
+                      <Image
+                        src={twibbon.url || "/images/placeholder.png"}
+                        alt={twibbon.name}
+                        fill
+                        className="object-contain"
+                        onError={(e) => {
+                          console.error("Image failed to load:", twibbon.url);
+                          const target = e.target as HTMLImageElement;
+                          target.src = "/images/placeholder.png";
+                        }}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Image
+                      src={twibbon.url || "/images/placeholder.png"}
+                      alt={twibbon.name}
+                      fill
+                      className="object-contain"
+                      onError={(e) => {
+                        console.error("Image failed to load:", twibbon.url);
+                        const target = e.target as HTMLImageElement;
+                        target.src = "/images/placeholder.png";
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Upload Section */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold mb-4">Upload Foto Anda</h3>
+            {/* Crop Controls */}
+            {userImage && (
+              <div className="mb-6 p-4 bg-gray-50 rounded-xl">
+                <h3 className="text-lg font-semibold mb-4 text-center">Atur Foto Anda</h3>
 
-              {!userImage ? (
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                  <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                  <button onClick={() => fileInputRef.current?.click()} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
-                    Pilih Foto
-                  </button>
-                  <p className="text-gray-500 mt-2">Format: JPG, PNG, GIF (Max 5MB)</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="relative w-full h-48 bg-gray-200 rounded-lg overflow-hidden">
-                    <Image src={userImage} alt="User uploaded image" fill className="object-cover" />
-                  </div>
-                  <div className="flex space-x-3">
-                    <button onClick={() => fileInputRef.current?.click()} className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors">
-                      Ganti Foto
-                    </button>
-                    <button onClick={() => setUserImage(null)} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors">
-                      Hapus
-                    </button>
+                {/* Zoom Slider */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Zoom In/Out</label>
+                  <input type="range" min={1} max={3} step={0.1} value={zoom} onChange={(e) => setZoom(Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>1x</span>
+                    <span>{zoom.toFixed(1)}x</span>
+                    <span>3x</span>
                   </div>
                 </div>
-              )}
-            </div>
-          </div>
 
-          {/* Preview & Download */}
-          <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold mb-4">Preview</h3>
-              <div className="relative w-full h-96 bg-gray-200 rounded-lg overflow-hidden">
-                <canvas ref={canvasRef} className="w-full h-full object-contain" />
+                <p className="text-xs text-gray-500 text-center">Drag dan zoom foto untuk mengatur posisi di dalam frame</p>
+              </div>
+            )}
+
+            {/* Engagement Stats */}
+            <div className="flex justify-between items-center mb-8 text-sm text-gray-500">
+              <div className="flex items-center">
+                <Image src="/images/icon-orang.png" alt="Dukungan" width={24} height={24} className="mr-2 w-6 h-6" />
+                <span className="text-base">{(twibbon.downloads + twibbon.shares).toLocaleString()} dukungan</span>
+              </div>
+              <div className="flex items-center">
+                <Image src="/images/icon-jam.png" alt="Waktu" width={24} height={24} className="mr-2 w-6 h-6" />
+                <span className="text-base">{formatTimeAgo(twibbon.created_at)}</span>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <button onClick={createTwibbon} disabled={!userImage || processing} className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white py-3 rounded-lg font-medium transition-colors">
-                {processing ? "Memproses..." : "Download Twibbon"}
-              </button>
+            {/* Upload Button */}
+            <motion.button
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full bg-[#ff6600] hover:bg-[#ff6600] text-white py-4 px-6 rounded-4xl font-medium transition-colors flex items-center justify-center text-lg mb-4"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Image src="/images/icon-foto.png" alt="Foto" width={24} height={24} className="mr-3 w-6 h-6" />
+              {userImage ? "Ganti Foto" : "Pilih Foto"}
+            </motion.button>
+
+            {/* Create Twibbon Button */}
+            {userImage && (
+              <motion.button
+                onClick={createTwibbon}
+                disabled={processing}
+                className="w-full bg-[#0268f8] hover:bg-[#0256d6] text-white py-4 px-6 rounded-4xl font-medium transition-colors flex items-center justify-center text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                whileHover={{ scale: processing ? 1 : 1.02 }}
+                whileTap={{ scale: processing ? 1 : 0.98 }}
+              >
+                {processing ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                    Membuat Twibbon...
+                  </>
+                ) : (
+                  "Buat Twibbon"
+                )}
+              </motion.button>
+            )}
+
+            {/* Language Selector */}
+            <div className="flex items-center justify-center mt-6 text-sm text-gray-500">
+              <Image src="/images/globe.png" alt="Indonesia" width={20} height={20} className="mr-2" />
+              Bahasa Indonesia
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
+
+      {/* Hidden file input */}
+      <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
 
       {/* Share Modal */}
       {showShareModal && (

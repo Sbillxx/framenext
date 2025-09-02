@@ -6,12 +6,18 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
   try {
     const { id: idParam } = await context.params;
     const id = parseInt(idParam);
+
+    console.log("Fetching twibbon with ID:", id);
+
     const twibbons = await query("SELECT * FROM twibbons WHERE id = ?", [id]);
+    console.log("Query result:", twibbons);
 
     if (!Array.isArray(twibbons) || twibbons.length === 0) {
+      console.log("Twibbon not found for ID:", id);
       return NextResponse.json({ success: false, error: "Twibbon not found" }, { status: 404 });
     }
 
+    console.log("Twibbon found:", twibbons[0]);
     return NextResponse.json({
       success: true,
       data: twibbons[0],

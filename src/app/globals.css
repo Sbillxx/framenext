@@ -5,13 +5,6 @@
   --foreground: #171717;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
@@ -19,8 +12,43 @@
   }
 }
 
+* {
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
+/* Ensure all text elements use Arial */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+div,
+button,
+input,
+textarea,
+label,
+a {
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
+/* Custom font for Sequel Sans Black Disp */
+@font-face {
+  font-family: "Sequel Sans Black Disp";
+  src: url("/fonts/SequelSansBlackDisp.woff2") format("woff2"), url("/fonts/SequelSansBlackDisp.woff") format("woff"), url("/fonts/SequelSansBlackDisp.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-sequel-black {
+  font-family: "Sequel Sans Black Disp", Arial, Helvetica, sans-serif !important;
 }
