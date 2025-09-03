@@ -13,6 +13,7 @@ interface Twibbon {
   downloads: number;
   shares: number;
   created_at: string;
+  slug: string;
 }
 
 interface TwibbonListProps {
@@ -27,10 +28,14 @@ export default function TwibbonList({ twibbons, loading }: TwibbonListProps) {
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
     if (diffInSeconds < 60) return "baru saja";
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} menit yang lalu`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} jam yang lalu`;
-    if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} hari yang lalu`;
-    if (diffInSeconds < 31536000) return `${Math.floor(diffInSeconds / 2592000)} bulan yang lalu`;
+    if (diffInSeconds < 3600)
+      return `${Math.floor(diffInSeconds / 60)} menit yang lalu`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)} jam yang lalu`;
+    if (diffInSeconds < 2592000)
+      return `${Math.floor(diffInSeconds / 86400)} hari yang lalu`;
+    if (diffInSeconds < 31536000)
+      return `${Math.floor(diffInSeconds / 2592000)} bulan yang lalu`;
     return `${Math.floor(diffInSeconds / 31536000)} tahun yang lalu`;
   };
 
@@ -39,7 +44,13 @@ export default function TwibbonList({ twibbons, loading }: TwibbonListProps) {
       <div className="container px-4 py-4 md:py-1 max-w-5xl w-full mx-auto">
         <div className="flex items-center justify-start mb-6 md:mb-8">
           <h2 className="text-2xl md:text-5xl font-bold my-4 md:my-8 text-[#0268f8] flex items-center">
-            <Image src="/images/fire2.png" alt="Viral Icon" width={48} height={48} className="mr-3 w-40 h-9 md:w-auto md:h-auto md:mr-5" />
+            <Image
+              src="/images/fire2.png"
+              alt="Viral Icon"
+              width={48}
+              height={48}
+              className="mr-3 w-40 h-9 md:w-auto md:h-auto md:mr-5"
+            />
             <span className="text-[#0268f8]">Lagi Viral</span>
           </h2>
         </div>
@@ -47,7 +58,9 @@ export default function TwibbonList({ twibbons, loading }: TwibbonListProps) {
         {loading ? (
           <p className="text-center text-gray-600">Loading twibbons...</p>
         ) : twibbons.length === 0 ? (
-          <p className="text-center text-gray-600">No twibbons found. Add some from the admin panel!</p>
+          <p className="text-center text-gray-600">
+            No twibbons found. Add some from the admin panel!
+          </p>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8">
             {twibbons.map((twibbon, index) => (
@@ -63,9 +76,19 @@ export default function TwibbonList({ twibbons, loading }: TwibbonListProps) {
                 whileTap={{ scale: 0.98 }}
                 className="bg-white rounded-xl overflow-hidden cursor-pointer"
               >
-                <Link href={`/twibbon/${twibbon.id}`}>
-                  <motion.div className="aspect-square relative w-full overflow-hidden" whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}>
-                    <Image src={twibbon.url} alt={twibbon.name} fill className="object-cover" sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw" />
+                <Link href={`/twibbon/${twibbon.slug}`}>
+                  <motion.div
+                    className="aspect-square relative w-full overflow-hidden"
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Image
+                      src={twibbon.url}
+                      alt={twibbon.name}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                    />
                   </motion.div>
                   <div className="p-2 md:p-4">
                     {/* Judul dengan scroll kalo kepanjangan */}
@@ -80,8 +103,12 @@ export default function TwibbonList({ twibbons, loading }: TwibbonListProps) {
                             : {}
                         }
                         transition={{
-                          duration: twibbon.name && twibbon.name.length > 20 ? 8 : 0,
-                          repeat: twibbon.name && twibbon.name.length > 20 ? Infinity : 0,
+                          duration:
+                            twibbon.name && twibbon.name.length > 20 ? 8 : 0,
+                          repeat:
+                            twibbon.name && twibbon.name.length > 20
+                              ? Infinity
+                              : 0,
                           ease: "linear",
                         }}
                         whileHover={{ color: "#0268f8" }}
@@ -92,20 +119,41 @@ export default function TwibbonList({ twibbons, loading }: TwibbonListProps) {
 
                     {/* Row 1: Akun Creator */}
                     <div className="flex items-center mb-1 md:mb-2">
-                      <div className="w-4 h-4 md:w-6 md:h-6 rounded-full bg-gray-200 mr-1 md:mr-2 flex items-center justify-center text-xs text-gray-500">PP</div>
-                      <span className="text-gray-600 text-xs md:text-sm">Akun Creator</span>
+                      <div className="w-4 h-4 md:w-6 md:h-6 rounded-full bg-gray-200 mr-1 md:mr-2 flex items-center justify-center text-xs text-gray-500">
+                        PP
+                      </div>
+                      <span className="text-gray-600 text-xs md:text-sm">
+                        Akun Creator
+                      </span>
                     </div>
 
                     {/* Row 2: Jumlah Dukungan */}
                     <div className="flex items-center mb-1 md:mb-2">
-                      <Image src="/images/icon-orang.png" alt="Icon Orang" width={12} height={12} className="mr-1 md:mr-2 w-3 h-3 md:w-auto md:h-auto" />
-                      <span className="text-gray-600 text-xs md:text-sm">{(twibbon.downloads + twibbon.shares).toLocaleString()} dukungan</span>
+                      <Image
+                        src="/images/icon-orang.png"
+                        alt="Icon Orang"
+                        width={12}
+                        height={12}
+                        className="mr-1 md:mr-2 w-3 h-3 md:w-auto md:h-auto"
+                      />
+                      <span className="text-gray-600 text-xs md:text-sm">
+                        {(twibbon.downloads + twibbon.shares).toLocaleString()}{" "}
+                        dukungan
+                      </span>
                     </div>
 
                     {/* Row 3: Waktu Pembuatan */}
                     <div className="flex items-center">
-                      <Image src="/images/icon-jam.png" alt="Icon Jam" width={12} height={12} className="mr-1 md:mr-2 w-3 h-3 md:w-auto md:h-auto" />
-                      <span className="text-gray-600 text-xs md:text-sm">{formatTimeAgo(twibbon.created_at)}</span>
+                      <Image
+                        src="/images/icon-jam.png"
+                        alt="Icon Jam"
+                        width={12}
+                        height={12}
+                        className="mr-1 md:mr-2 w-3 h-3 md:w-auto md:h-auto"
+                      />
+                      <span className="text-gray-600 text-xs md:text-sm">
+                        {formatTimeAgo(twibbon.created_at)}
+                      </span>
                     </div>
                   </div>
                 </Link>
@@ -118,7 +166,12 @@ export default function TwibbonList({ twibbons, loading }: TwibbonListProps) {
         {!loading && twibbons.length === 0 && (
           <div className="text-center py-8 md:py-12">
             <div className="text-gray-400 mb-4">
-              <svg className="mx-auto h-8 w-8 md:h-12 md:w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg
+                className="mx-auto h-8 w-8 md:h-12 md:w-12"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -127,8 +180,12 @@ export default function TwibbonList({ twibbons, loading }: TwibbonListProps) {
                 />
               </svg>
             </div>
-            <h3 className="text-base md:text-lg font-medium text-gray-900 mb-2">Belum ada twibbon viral</h3>
-            <p className="text-gray-600 text-sm md:text-base">Twibbon akan muncul di sini setelah ditambahkan oleh admin.</p>
+            <h3 className="text-base md:text-lg font-medium text-gray-900 mb-2">
+              Belum ada twibbon viral
+            </h3>
+            <p className="text-gray-600 text-sm md:text-base">
+              Twibbon akan muncul di sini setelah ditambahkan oleh admin.
+            </p>
           </div>
         )}
       </div>
