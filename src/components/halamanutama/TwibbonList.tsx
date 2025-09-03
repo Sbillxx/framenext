@@ -69,9 +69,26 @@ export default function TwibbonList({ twibbons, loading }: TwibbonListProps) {
                   </motion.div>
                   <div className="p-2 md:p-4">
                     {/* Judul dengan scroll kalo kepanjangan */}
-                    <motion.h3 className="font-semibold text-sm md:text-lg text-gray-800 mb-2 md:mb-3 truncate hover:text-clip hover:whitespace-normal" whileHover={{ color: "#0268f8" }} transition={{ duration: 0.2 }}>
-                      {twibbon.name || "Judul Twibbon disini ea.."}
-                    </motion.h3>
+                    <div className="overflow-hidden mb-2 md:mb-3">
+                      <motion.div
+                        className="font-semibold text-sm md:text-lg text-gray-800 whitespace-nowrap"
+                        animate={
+                          twibbon.name && twibbon.name.length > 20
+                            ? {
+                                x: [0, -100],
+                              }
+                            : {}
+                        }
+                        transition={{
+                          duration: twibbon.name && twibbon.name.length > 20 ? 8 : 0,
+                          repeat: twibbon.name && twibbon.name.length > 20 ? Infinity : 0,
+                          ease: "linear",
+                        }}
+                        whileHover={{ color: "#0268f8" }}
+                      >
+                        {twibbon.name || "Judul Twibbon disini ea.."}
+                      </motion.div>
+                    </div>
 
                     {/* Row 1: Akun Creator */}
                     <div className="flex items-center mb-1 md:mb-2">
