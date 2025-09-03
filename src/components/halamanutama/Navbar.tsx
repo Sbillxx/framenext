@@ -7,9 +7,14 @@ import { useState } from "react";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSlideMenuOpen, setIsSlideMenuOpen] = useState(false);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const toggleSlideMenu = () => {
+    setIsSlideMenuOpen(!isSlideMenuOpen);
   };
 
   return (
@@ -70,6 +75,13 @@ export default function Navbar() {
               {/* Glow effect */}
               <span className="absolute -inset-1 bg-gradient-to-r from-orange-400 to-orange-600 rounded-full blur opacity-0 group-hover:opacity-50 transition duration-500"></span>
             </motion.button>
+
+            {/* Desktop Hamburger Menu */}
+            <button onClick={toggleSlideMenu} className="hidden md:block p-2 rounded-md hover:bg-white hover:bg-opacity-10 transition-colors">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
 
             {/* Mobile: Search Icon */}
             <button className="md:hidden p-2 rounded-md hover:bg-white hover:bg-opacity-10 transition-colors">
@@ -136,6 +148,15 @@ export default function Navbar() {
                   <Link href="/contoh" className="block text-white hover:text-orange-300 transition-colors py-2">
                     Contoh
                   </Link>
+                  <Link href="/tentang" className="block text-white hover:text-orange-300 transition-colors py-2">
+                    Tentang Kami
+                  </Link>
+                  <Link href="/viral" className="block text-white hover:text-orange-300 transition-colors py-2">
+                    Lagi Viral
+                  </Link>
+                  <Link href="/bantuan" className="block text-white hover:text-orange-300 transition-colors py-2">
+                    Pusat Bantuan
+                  </Link>
                 </div>
 
                 {/* Mobile CTA Button */}
@@ -150,7 +171,64 @@ export default function Navbar() {
 
       {/* Background Blur Overlay */}
       <AnimatePresence>
-        {isMenuOpen && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="fixed inset-0  bg-opacity-20 backdrop-blur-sm z-40 md:hidden" onClick={toggleMenu} />}
+        {isMenuOpen && <motion.div initial={{ opacity: 1 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="fixed inset-0  bg-opacity-20 backdrop-blur-3xl z-40 md:hidden" onClick={toggleMenu} />}
+      </AnimatePresence>
+
+      {/* Desktop Slide-in Menu */}
+      <AnimatePresence>
+        {isSlideMenuOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="fixed inset-0  z-40 hidden md:block" onClick={toggleSlideMenu} />
+
+            {/* Slide Menu */}
+            <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 25, stiffness: 200 }} className="fixed top-0 right-0 h-full w-80 bg-[#0268f8] z-50 hidden md:block shadow-2xl">
+              <div className="p-6 h-full flex flex-col max-w-5xl mx-auto">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-8">
+                  <div className="space-y-1">
+                    <Link href="/tentang" className="block text-white hover:text-orange-300 transition-colors text-lg font-medium">
+                      Tentang Kami
+                    </Link>
+                    <Link href="/viral" className="block text-white hover:text-orange-300 transition-colors text-lg font-medium">
+                      Lagi Viral
+                    </Link>
+                    <Link href="/bantuan" className="block text-white hover:text-orange-300 transition-colors text-lg font-medium">
+                      Pusat Bantuan
+                    </Link>
+                  </div>
+                  <button onClick={toggleSlideMenu} className="p-2 hover:bg-white hover:bg-opacity-10 rounded-full transition-colors">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Separator */}
+                <div className="border-t border-white border-opacity-20 mb-8"></div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 mb-8">
+                  <button className="flex-1 px-4 py-3 border border-white text-white rounded-full hover:bg-white hover:text-[#0268f8] transition-all duration-200 font-medium">Masuk</button>
+                  <button className="flex-1 px-4 py-3 bg-[#ff6600] text-white rounded-full hover:bg-orange-600 transition-all duration-200 font-medium">Daftar</button>
+                </div>
+
+                {/* Language Selector */}
+                <div className="mt-auto flex items-center space-x-2 text-white">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <span className="text-sm">Bahasa Indonesia</span>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
       </AnimatePresence>
 
       {/* Spacer for fixed navbar */}
