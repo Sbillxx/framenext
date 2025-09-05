@@ -26,7 +26,7 @@ export default function BlankPage() {
             <p className="text-sm leading-relaxed opacity-90 max-w-md">Web masih dalam tahap pengembangan nih, jadi beberapa fitur belum bisa dipake ya. Tapi ini gak akan lama kok, fitur utama masih berfungsi normal. Terimakasih</p>
           </div>
 
-          <button onClick={handleBack} className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-8 py-3 rounded-lg transition-colors duration-200 shadow-lg">
+          <button onClick={handleBack} className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-15 py-3 rounded-4xl transition-colors duration-200 shadow-lg">
             Kembali
           </button>
         </div>

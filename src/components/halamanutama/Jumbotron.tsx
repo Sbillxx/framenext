@@ -66,7 +66,7 @@ export default function Jumbotron() {
               {/* Logo */}
               <Link href="/">
                 <div className="flex items-center mb-4">
-                  <Image src="/images/frameid-jumobotron.png" alt="Frame ID Logo" width={200} height={60} className="h-40 w-auto" />
+                  <Image src="/images/jumbotron-revisi.png" alt="Frame ID Logo" width={200} height={60} className="h-40 w-auto" />
                 </div>
               </Link>
             </div>

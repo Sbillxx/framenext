@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 export default function Hero() {
   return (
@@ -17,27 +18,29 @@ export default function Hero() {
           <p className="text-sm md:text-base mb-8 text-white leading-relaxed">Dari momen kecil sampai event gede, kasih sentuhan keren pakai twibbon. Frame ID siap bikin momenmu naik level. Gratis gapake watermark!</p>
 
           {/* Mobile Button - Left Aligned */}
-          <motion.button
-            whileHover={{
-              scale: 1.05,
-              boxShadow: "0px 8px 25px rgba(255, 102, 0, 0.4)",
-            }}
-            whileTap={{ scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 300 }}
-            className="relative px-6 py-3 rounded-full bg-[#ff6600] text-white font-bold text-base overflow-hidden group w-auto"
-          >
-            {/* Ripple animation */}
-            <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition duration-500"></span>
+          <Link href="/blank-page">
+            <motion.button
+              whileHover={{
+                scale: 1.05,
+                boxShadow: "0px 8px 25px rgba(255, 102, 0, 0.4)",
+              }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              className="relative px-6 py-3 rounded-full bg-[#ff6600] text-white font-bold text-base overflow-hidden group w-auto"
+            >
+              {/* Ripple animation */}
+              <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition duration-500"></span>
 
-            {/* Text */}
-            <span className="relative z-10 flex items-center justify-center">
-              <span className="mr-2">+</span>
-              Mulai Kampanye
-            </span>
+              {/* Text */}
+              <span className="relative z-10 flex items-center justify-center">
+                <span className="mr-2">+</span>
+                Mulai Kampanye
+              </span>
 
-            {/* Glow effect */}
-            <span className="absolute -inset-1 bg-gradient-to-r from-orange-400 to-orange-600 rounded-full blur opacity-0 group-hover:opacity-50 transition duration-500"></span>
-          </motion.button>
+              {/* Glow effect */}
+              <span className="absolute -inset-1 bg-gradient-to-r from-orange-400 to-orange-600 rounded-full blur opacity-0 group-hover:opacity-50 transition duration-500"></span>
+            </motion.button>
+          </Link>
         </div>
 
         {/* Desktop Content - Left Side */}
@@ -48,25 +51,27 @@ export default function Hero() {
           </p>
 
           {/* Desktop Button */}
-          <motion.button
-            whileHover={{
-              scale: 1.1,
-              rotate: 1,
-              boxShadow: "0px 8px 25px rgba(255, 102, 0, 0.4)",
-            }}
-            whileTap={{ scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 300 }}
-            className="relative px-8 py-3 rounded-full bg-[#ff6600] text-white font-bold text-lg overflow-hidden group"
-          >
-            {/* Ripple animation */}
-            <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition duration-500"></span>
+          <Link href="/blank-page">
+            <motion.button
+              whileHover={{
+                scale: 1.1,
+                rotate: 1,
+                boxShadow: "0px 8px 25px rgba(255, 102, 0, 0.4)",
+              }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              className="relative px-8 py-3 rounded-full bg-[#ff6600] text-white font-bold text-lg overflow-hidden group"
+            >
+              {/* Ripple animation */}
+              <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition duration-500"></span>
 
-            {/* Text */}
-            <span className="relative z-10 flex items-center">+ Mulai Kampanye</span>
+              {/* Text */}
+              <span className="relative z-10 flex items-center">+ Mulai Kampanye</span>
 
-            {/* Glow effect */}
-            <span className="absolute -inset-1 bg-gradient-to-r from-orange-400 to-orange-600 rounded-full blur opacity-0 group-hover:opacity-50 transition duration-500"></span>
-          </motion.button>
+              {/* Glow effect */}
+              <span className="absolute -inset-1 bg-gradient-to-r from-orange-400 to-orange-600 rounded-full blur opacity-0 group-hover:opacity-50 transition duration-500"></span>
+            </motion.button>
+          </Link>
         </div>
 
         {/* Right: Icon PNG Placeholder - Hidden on mobile, visible on desktop */}
