@@ -16,6 +16,7 @@ interface Twibbon {
   downloads: number;
   shares: number;
   created_at: string;
+  thumbnail: string;
 }
 
 interface CropArea {
@@ -78,11 +79,11 @@ export default function TwibbonDetail() {
       img.onload = () => {
         setFrameRatio({ width: img.width, height: img.height });
       };
-      img.onerror = () => {
-        console.error("Failed to load image:", twibbon.url);
+      img.onerror = (e) => {
+        console.log("Failed to load image:", e);
         setFrameRatio({ width: 1, height: 1 }); // Default ratio
       };
-      img.src = twibbon.url;
+      img.src = `/api/image/uploads/${twibbon.filename}`;
     }
   }, [twibbon?.url]);
 
@@ -227,7 +228,7 @@ export default function TwibbonDetail() {
         };
         userImg.src = userImage;
       };
-      frameImg.src = twibbon.url;
+      frameImg.src = `/api/images/uploads/${twibbon.filename}`;
     } catch (error) {
       console.error("Error creating twibbon:", error);
     } finally {
@@ -420,7 +421,10 @@ export default function TwibbonDetail() {
                     {/* Twibbon Frame Overlay */}
                     <div className="absolute inset-0 pointer-events-none">
                       <Image
-                        src={twibbon.url || "/images/placeholder.png"}
+                        src={
+                          `/api/images/uploads/${twibbon.filename}` ||
+                          "/images/placeholder.png"
+                        }
                         alt={twibbon.name}
                         fill
                         className="object-contain"
@@ -435,7 +439,10 @@ export default function TwibbonDetail() {
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <Image
-                      src={twibbon.url || "/images/placeholder.png"}
+                      src={
+                        `/api/images/uploads/${twibbon.filename}` ||
+                        "/images/placeholder.png"
+                      }
                       alt={twibbon.name}
                       fill
                       className="object-contain"
