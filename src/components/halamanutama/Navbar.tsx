@@ -56,32 +56,55 @@ export default function Navbar() {
             </div>
 
             {/* Orange Button - Hidden on mobile */}
-            <motion.button
-              whileHover={{
-                scale: 1.1,
-                rotate: 1,
-                boxShadow: "0px 8px 25px rgba(255, 102, 0, 0.4)",
-              }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 300 }}
-              className="relative px-6 py-3 rounded-full bg-[#ff6600] text-white font-semibold overflow-hidden group hidden md:block"
-            >
-              {/* Ripple animation */}
-              <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition duration-500"></span>
+            <Link href="/blank-page">
+              <motion.button
+                whileHover={{
+                  scale: 1.1,
+                  rotate: 1,
+                  boxShadow: "0px 8px 25px rgba(255, 102, 0, 0.4)",
+                }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 300 }}
+                className="relative px-6 py-3 rounded-full bg-[#ff6600] text-white font-semibold overflow-hidden group hidden md:block"
+              >
+                {/* Ripple animation */}
+                <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition duration-500"></span>
 
-              {/* Text */}
-              <span className="relative z-10 flex items-center">+ Mulai Kampanye</span>
+                {/* Text */}
+                <span className="relative z-10 flex items-center">+ Mulai Kampanye</span>
 
-              {/* Glow effect */}
-              <span className="absolute -inset-1 bg-gradient-to-r from-orange-400 to-orange-600 rounded-full blur opacity-0 group-hover:opacity-50 transition duration-500"></span>
-            </motion.button>
+                {/* Glow effect */}
+                <span className="absolute -inset-1 bg-gradient-to-r from-orange-400 to-orange-600 rounded-full blur opacity-0 group-hover:opacity-50 transition duration-500"></span>
+              </motion.button>
+            </Link>
 
             {/* Desktop Hamburger Menu */}
-            <button onClick={toggleSlideMenu} className="hidden md:block p-2 rounded-md hover:bg-white hover:bg-opacity-10 transition-colors">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
+            <motion.button
+              onClick={toggleSlideMenu}
+              className="hidden md:block p-2 rounded-md hover:bg-opacity-10 transition-colors"
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              whileTap={{ scale: 0.9, rotate: -5 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+            >
+              <motion.svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" animate={isSlideMenuOpen ? { rotate: 180 } : { rotate: 0 }} transition={{ duration: 0.3, ease: "easeInOut" }}>
+                <motion.path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                  animate={
+                    isSlideMenuOpen
+                      ? {
+                          d: "M6 18L18 6M6 6l12 12",
+                        }
+                      : {
+                          d: "M4 6h16M4 12h16M4 18h16",
+                        }
+                  }
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                />
+              </motion.svg>
+            </motion.button>
 
             {/* Mobile: Search Icon */}
             <button className="md:hidden p-2 rounded-md hover:bg-white hover:bg-opacity-10 transition-colors">
@@ -91,11 +114,32 @@ export default function Navbar() {
             </button>
 
             {/* Hamburger Menu (3 lines) */}
-            <button onClick={toggleMenu} className="p-2 rounded-md hover:bg-white hover:bg-opacity-10 transition-colors md:hidden">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
+            <motion.button
+              onClick={toggleMenu}
+              className="p-2 rounded-md hover:bg-white hover:bg-opacity-10 transition-colors md:hidden"
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              whileTap={{ scale: 0.9, rotate: -5 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+            >
+              <motion.svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" animate={isMenuOpen ? { rotate: 180 } : { rotate: 0 }} transition={{ duration: 0.3, ease: "easeInOut" }}>
+                <motion.path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                  animate={
+                    isMenuOpen
+                      ? {
+                          d: "M6 18L18 6M6 6l12 12",
+                        }
+                      : {
+                          d: "M4 6h16M4 12h16M4 18h16",
+                        }
+                  }
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                />
+              </motion.svg>
+            </motion.button>
           </div>
         </nav>
 
@@ -160,9 +204,11 @@ export default function Navbar() {
                 </div>
 
                 {/* Mobile CTA Button */}
-                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full px-6 py-3 rounded-full bg-[#ff6600] text-white font-semibold hover:bg-orange-600 transition-colors">
-                  + Mulai Kampanye
-                </motion.button>
+                <Link href="/blank-page">
+                  <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full px-6 py-3 rounded-full bg-[#ff6600] text-white font-semibold hover:bg-orange-600 transition-colors">
+                    + Mulai Kampanye
+                  </motion.button>
+                </Link>
               </div>
             </motion.div>
           )}

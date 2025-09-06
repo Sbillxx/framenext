@@ -62,17 +62,17 @@ export default function TwibbonList({ twibbons, loading }: TwibbonListProps) {
                   y: -5,
                 }}
                 whileTap={{ scale: 0.98 }}
-                className="bg-white rounded-xl overflow-hidden cursor-pointer"
+                className="bg-white rounded-lg overflow-hidden cursor-pointer"
               >
                 <Link href={`/twibbon/${twibbon.slug}`}>
                   <motion.div className="aspect-square relative w-full overflow-hidden" whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}>
                     <Image src={twibbon.url} alt={twibbon.name} fill className="object-cover" sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw" />
                   </motion.div>
-                  <div className="p-2 md:p-4">
+                  <div className="p-1.5 md:p-2">
                     {/* Judul dengan scroll kalo kepanjangan */}
-                    <div className="overflow-hidden mb-2 md:mb-3">
+                    <div className="overflow-hidden mb-1 md:mb-1.5">
                       <motion.div
-                        className="font-semibold text-sm md:text-lg text-gray-800 whitespace-nowrap"
+                        className="font-semibold text-xs md:text-sm text-gray-800 whitespace-nowrap"
                         animate={
                           twibbon.name && twibbon.name.length > 20
                             ? {
@@ -92,21 +92,21 @@ export default function TwibbonList({ twibbons, loading }: TwibbonListProps) {
                     </div>
 
                     {/* Row 1: Akun Creator */}
-                    <div className="flex items-center mb-1 md:mb-2">
-                      <div className="w-4 h-4 md:w-6 md:h-6 rounded-full bg-gray-200 mr-1 md:mr-2 flex items-center justify-center text-xs text-gray-500">PP</div>
-                      <span className="text-gray-600 text-xs md:text-sm">Akun Creator</span>
+                    <div className="flex items-center mb-0.5 md:mb-1">
+                      <div className="w-3 h-3 md:w-4 md:h-4 rounded-full bg-gray-200 mr-1 flex items-center justify-center text-[10px] md:text-xs text-gray-500">PP</div>
+                      <span className="text-gray-600 text-[10px] md:text-xs">Akun Creator</span>
                     </div>
 
                     {/* Row 2: Jumlah Dukungan */}
-                    <div className="flex items-center mb-1 md:mb-2">
-                      <Image src="/images/icon-orang.png" alt="Icon Orang" width={12} height={12} className="mr-1 md:mr-2 w-3 h-3 md:w-auto md:h-auto" />
-                      <span className="text-gray-600 text-xs md:text-sm">{(twibbon.downloads + twibbon.shares).toLocaleString()} dukungan</span>
+                    <div className="flex items-center mb-0.5 md:mb-1">
+                      <Image src="/images/icon-orang.png" alt="Icon Orang" width={10} height={10} className="mr-1 w-2.5 h-2.5 md:w-3 md:h-3" />
+                      <span className="text-gray-600 text-[10px] md:text-xs">{(twibbon.downloads + twibbon.shares).toLocaleString()} dukungan</span>
                     </div>
 
                     {/* Row 3: Waktu Pembuatan */}
                     <div className="flex items-center">
-                      <Image src="/images/icon-jam.png" alt="Icon Jam" width={12} height={12} className="mr-1 md:mr-2 w-3 h-3 md:w-auto md:h-auto" />
-                      <span className="text-gray-600 text-xs md:text-sm">{formatTimeAgo(twibbon.created_at)}</span>
+                      <Image src="/images/icon-jam.png" alt="Icon Jam" width={10} height={10} className="mr-1 w-2.5 h-2.5 md:w-3 md:h-3" />
+                      <span className="text-gray-600 text-[10px] md:text-xs">{formatTimeAgo(twibbon.created_at)}</span>
                     </div>
                   </div>
                 </Link>

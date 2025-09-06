@@ -40,15 +40,8 @@ a {
   font-family: Arial, Helvetica, sans-serif !important;
 }
 
-/* Custom font for Sequel Sans Black Disp */
-@font-face {
-  font-family: "Sequel Sans Black Disp";
-  src: url("/fonts/SequelSansBlackDisp.woff2") format("woff2"), url("/fonts/SequelSansBlackDisp.woff") format("woff"), url("/fonts/SequelSansBlackDisp.ttf") format("truetype");
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
-}
-
+/* Custom font for Sequel Sans Black Disp - using system fonts as fallback */
 .font-sequel-black {
-  font-family: "Sequel Sans Black Disp", Arial, Helvetica, sans-serif !important;
+  font-family: "Arial Black", "Helvetica Neue", Arial, Helvetica, sans-serif !important;
+  font-weight: 900;
 }

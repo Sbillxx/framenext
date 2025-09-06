@@ -44,7 +44,7 @@ export default function Hero() {
         </div>
 
         {/* Desktop Content - Left Side */}
-        <div className="hidden lg:block lg:w-2/3 text-center lg:text-left mb-4 lg:mb-0">
+        <div className="hidden lg:block lg:w-2/3 text-center lg:text-left mb-4 lg:mb-0 -mt-30">
           <h1 className="text-xl md:text-5xl font-extrabold leading-tight mb-5">Celebrate Moments with Twibbon</h1>
           <p className="text-sm md:text-l mb-8 max-w-lg mx-auto lg:mx-0 text-justify">
             Dari momen kecil sampai event gede, kasih sentuhan keren pakai <strong>twibbon</strong>, <strong>Frame ID</strong> siap bikin momenmu naik level. <strong>GRATIS TANPA WATERMARK!!</strong>
