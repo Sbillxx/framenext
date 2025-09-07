@@ -21,6 +21,8 @@ interface Twibbon {
   downloads: number;
   shares: number;
   created_at: string;
+  slug: string;
+  thumbnail: string;
 }
 
 export default function Home() {
