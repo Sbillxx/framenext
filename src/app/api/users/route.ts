@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 // Simulasi database
-let users = [
+const users = [
   { id: 1, name: "John Doe", email: "john@example.com" },
   { id: 2, name: "Jane Smith", email: "jane@example.com" },
 ];
@@ -44,5 +44,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     return NextResponse.json({ error: "Invalid JSON data" }, { status: 400 });
+    console.error(error);
   }
 }

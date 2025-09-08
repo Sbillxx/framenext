@@ -2,27 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/database";
 
 // GET twibbon by ID
-export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ slug: string }> }
-) {
+export async function GET(request: NextRequest, context: { params: Promise<{ slug: string }> }) {
   try {
     const { slug: slugParam } = await context.params;
     const slug = slugParam;
 
     console.log("Fetching twibbon with slug:", slug);
 
-    const twibbons = await query("SELECT * FROM twibbons WHERE slug = ?", [
-      slug,
-    ]);
+    const twibbons = await query("SELECT * FROM twibbons WHERE slug = ?", [slug]);
     console.log("Query result:", twibbons);
 
     if (!Array.isArray(twibbons) || twibbons.length === 0) {
       console.log("Twibbon not found for slug:", slug);
-      return NextResponse.json(
-        { success: false, error: "Twibbon not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: "Twibbon not found" }, { status: 404 });
     }
 
     console.log("Twibbon found:", twibbons[0]);
@@ -32,31 +24,21 @@ export async function GET(
     });
   } catch (error) {
     console.error("Error fetching twibbon:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to fetch twibbon" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: "Failed to fetch twibbon" }, { status: 500 });
   }
 }
 
 // PUT update twibbon downloads/shares
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
-    const { id: idParam } = await params;
-    const id = parseInt(idParam);
+    const { slug } = await params;
     const body = await request.json();
 
     // Update downloads atau shares
     if (body.action === "download") {
-      await query(
-        "UPDATE twibbons SET downloads = downloads + 1 WHERE id = ?",
-        [id]
-      );
+      await query("UPDATE twibbons SET downloads = downloads + 1 WHERE slug = ?", [slug]);
     } else if (body.action === "share") {
-      await query("UPDATE twibbons SET shares = shares + 1 WHERE id = ?", [id]);
+      await query("UPDATE twibbons SET shares = shares + 1 WHERE slug = ?", [slug]);
     }
 
     return NextResponse.json({
@@ -65,9 +47,6 @@ export async function PUT(
     });
   } catch (error) {
     console.error("Error updating twibbon:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to update twibbon" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: "Failed to update twibbon" }, { status: 500 });
   }
 }

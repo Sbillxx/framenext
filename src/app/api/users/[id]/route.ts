@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
 // Simulasi database (sama dengan route.ts di atas)
-let users = [
+const users = [
   { id: 1, name: "John Doe", email: "john@example.com" },
   { id: 2, name: "Jane Smith", email: "jane@example.com" },
 ];
 
 // GET user by ID
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const id = parseInt(params.id);
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id: idParam } = await params;
+  const id = parseInt(idParam);
   const user = users.find((u) => u.id === id);
 
   if (!user) {
@@ -22,9 +23,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 }
 
 // PUT update user
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
     const body = await request.json();
 
     const userIndex = users.findIndex((u) => u.id === id);
@@ -47,12 +49,14 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     });
   } catch (error) {
     return NextResponse.json({ error: "Invalid JSON data" }, { status: 400 });
+    console.error(error);
   }
 }
 
 // DELETE user
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const id = parseInt(params.id);
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id: idParam } = await params;
+  const id = parseInt(idParam);
   const userIndex = users.findIndex((u) => u.id === id);
 
   if (userIndex === -1) {

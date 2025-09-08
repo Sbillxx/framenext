@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     try {
       await query("SELECT 1 FROM feedback LIMIT 1");
       console.log("✅ Feedback table exists");
-    } catch (tableError) {
+    } catch {
       console.log("🔄 Table doesn't exist, creating...");
       try {
         // Buat tabel jika belum ada

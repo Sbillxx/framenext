@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 // GET endpoint
-export async function GET(request: NextRequest) {
+export async function GET() {
   return NextResponse.json({
     message: "Hello from TWIBON API!",
     timestamp: new Date().toISOString(),
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
       status: "success",
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Invalid JSON data" }, { status: 400 });
   }
 }
