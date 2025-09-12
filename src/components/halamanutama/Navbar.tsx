@@ -239,7 +239,7 @@ export default function Navbar() {
         {isSlideMenuOpen && (
           <>
             {/* Backdrop */}
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="fixed inset-0  z-40 hidden md:block" onClick={toggleSlideMenu} />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="fixed inset-0 bg-opacity-20 backdrop-blur-md z-40 hidden md:block" onClick={toggleSlideMenu} />
 
             {/* Slide Menu */}
             <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 25, stiffness: 200 }} className="fixed top-0 right-0 h-full w-135 bg-[#0268f8] z-50 hidden md:block shadow-2xl">
