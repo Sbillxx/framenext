@@ -14,7 +14,7 @@ const Footer = () => {
             <Link href="/">
               <div className="flex items-center">
                 {/* <Image src="/images/logobiru.png" alt="Frame ID Logo" width={120} height={40} className="h-25 w-auto" /> */}
-                <Image src="/images/logobiru.png" alt="Frame ID Logo" width={80} height={30} className="h-15 lg:h-25 w-auto sm:h-6" />
+                <Image src="/images/foot.png" alt="Frame ID Logo" width={300} height={30} className="h-15 lg:h-25 w-auto sm:h-6" />
               </div>
             </Link>
 

@@ -27,11 +27,11 @@ export default function Navbar() {
             <div className="flex items-center">
               {/* Mobile: Simple text logo */}
               <div className="md:hidden text-white font-bold text-xl">
-                <Image src="/images/Logo Frameid White.png" alt="Frame ID Logo" width={120} height={40} className="h-5 w-auto" />
+                <Image src="/images/logoss.png" alt="Frame ID Logo" width={600} height={40} className="h-5 w-auto" />
               </div>
               {/* Desktop: Full logo */}
               <div className="hidden md:block">
-                <Image src="/images/Logo Frameid White.png" alt="Frame ID Logo" width={120} height={40} className="h-8 w-auto" />
+                <Image src="/images/logoss.png" alt="Frame ID Logo" width={600} height={40} className="h-8 w-auto" />
               </div>
             </div>
           </Link>
@@ -183,7 +183,7 @@ export default function Navbar() {
 
                 {/* Mobile Menu Items */}
                 <div className="space-y-3">
-                  <Link href="/" className="block text-white hover:text-orange-300 transition-colors py-2">
+                  {/* <Link href="/" className="block text-white hover:text-orange-300 transition-colors py-2">
                     Beranda
                   </Link>
                   <Link href="/jelajahi" className="block text-white hover:text-orange-300 transition-colors py-2">
@@ -191,14 +191,14 @@ export default function Navbar() {
                   </Link>
                   <Link href="/contoh" className="block text-white hover:text-orange-300 transition-colors py-2">
                     Contoh
-                  </Link>
-                  <Link href="/tentang" className="block text-white hover:text-orange-300 transition-colors py-2">
+                  </Link> */}
+                  <Link href="/tentang-kami" className="block text-white hover:text-orange-300 transition-colors py-2">
                     Tentang Kami
                   </Link>
                   <Link href="/viral" className="block text-white hover:text-orange-300 transition-colors py-2">
                     Lagi Viral
                   </Link>
-                  <Link href="/bantuan" className="block text-white hover:text-orange-300 transition-colors py-2">
+                  <Link href="/pusat-bantuan" className="block text-white hover:text-orange-300 transition-colors py-2">
                     Pusat Bantuan
                   </Link>
                 </div>
@@ -228,22 +228,22 @@ export default function Navbar() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="fixed inset-0  z-40 hidden md:block" onClick={toggleSlideMenu} />
 
             {/* Slide Menu */}
-            <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 25, stiffness: 200 }} className="fixed top-0 right-0 h-full w-80 bg-[#0268f8] z-50 hidden md:block shadow-2xl">
+            <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 25, stiffness: 200 }} className="fixed top-0 right-0 h-full w-135 bg-[#0268f8] z-50 hidden md:block shadow-2xl">
               <div className="p-6 h-full flex flex-col max-w-5xl mx-auto">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                   <div className="space-y-1">
-                    <Link href="/tentang" className="block text-white hover:text-orange-300 transition-colors text-lg font-medium">
+                    <Link href="/tentang-kami" className="block text-white hover:text-orange-300 transition-colors text-lg font-medium">
                       Tentang Kami
                     </Link>
                     <Link href="/viral" className="block text-white hover:text-orange-300 transition-colors text-lg font-medium">
                       Lagi Viral
                     </Link>
-                    <Link href="/bantuan" className="block text-white hover:text-orange-300 transition-colors text-lg font-medium">
+                    <Link href="/pusat-bantuan" className="block text-white hover:text-orange-300 transition-colors text-lg font-medium">
                       Pusat Bantuan
                     </Link>
                   </div>
-                  <button onClick={toggleSlideMenu} className="p-2 hover:bg-white hover:bg-opacity-10 rounded-full transition-colors">
+                  <button onClick={toggleSlideMenu} className="p-2 hover:bg-white hover:bg-opacity-10 rounded-full -mt-15 transition-colors">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>

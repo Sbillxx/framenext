@@ -29,7 +29,7 @@ export default function JelajahiPage() {
 
   useEffect(() => {
     filterAndSortTwibbons();
-  }, [twibbons, searchTerm, sortBy]);
+  });
 
   const fetchTwibbons = async () => {
     try {
@@ -77,11 +77,11 @@ export default function JelajahiPage() {
     return `${Math.floor(diffInSeconds / 31536000)} tahun yang lalu`;
   };
 
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num.toString();
-  };
+  // const formatNumber = (num: number) => {
+  //   if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+  //   if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+  //   return num.toString();
+  // };
 
   if (loading) {
     return (
