@@ -536,11 +536,11 @@ export default function TwibbonDetail() {
                 {/* Engagement Stats */}
                 <div className="flex justify-between items-center mb-6 sm:mb-8 text-sm text-gray-500">
                   <div className="flex items-center">
-                    <Image src="/images/icon-orang.png" alt="Dukungan" width={24} height={24} className="mr-2 w-5 h-5 sm:w-6 sm:h-6" />
+                    <Image src="/images/orang2.png" alt="Dukungan" width={200} height={200} className="mr-2 w-5 h-5 sm:w-7 sm:h-6" />
                     <span className="text-sm sm:text-base">{(twibbon?.downloads + twibbon?.shares || 0).toLocaleString()} dukungan</span>
                   </div>
                   <div className="flex items-center">
-                    <Image src="/images/icon-jam.png" alt="Waktu" width={24} height={24} className="mr-2 w-5 h-5 sm:w-6 sm:h-6" />
+                    <Image src="/images/jam.png" alt="Waktu" width={200} height={200} className="mr-2 w-5 h-5 sm:w-6 sm:h-6" />
                     <span className="text-sm sm:text-base">{twibbon ? formatTimeAgo(twibbon.created_at) : "a month ago"}</span>
                   </div>
                 </div>

@@ -9,6 +9,92 @@ import Footer from "../halamanutama/Footer";
 import CroppingModal from "./CroppingModal";
 import { StateProps } from "@/lib/types";
 import { SimpanTwibbon } from "@/lib/crud/twibbon/action";
+import { useDynamicUrl } from "@/hooks/useDynamicUrl";
+
+// Interface yang sama seperti TwibbonList
+interface Twibbon {
+  id: number;
+  name: string;
+  description: string;
+  filename: string;
+  url: string;
+  downloads: number;
+  shares: number;
+  created_at: string;
+  slug: string;
+  thumbnail: string;
+}
+
+// Edit Twibbon Modal Component
+const EditTwibbonModal = ({ twibbon, onClose, onSave }: { twibbon: Twibbon; onClose: () => void; onSave: (data: Partial<Twibbon>) => void }) => {
+  const [name, setName] = useState(twibbon.name || "");
+  const [description, setDescription] = useState(twibbon.description || "");
+  const [slug, setSlug] = useState(twibbon.slug || "");
+  const { getDisplayUrl } = useDynamicUrl();
+
+  const handleSave = () => {
+    onSave({ name, description, slug });
+  };
+
+  return (
+    <div className="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }} className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
+        <h3 className="text-xl font-bold text-gray-900 mb-4">Edit Twibbon</h3>
+
+        <div className="space-y-4">
+          {/* Name/Title */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Judul</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+              placeholder="Masukkan judul twibbon"
+            />
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Deskripsi</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+              placeholder="Masukkan deskripsi twibbon"
+            />
+          </div>
+
+          {/* Slug */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Link</label>
+            <div className="flex">
+              <span className="inline-flex items-center px-3 py-2 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">{getDisplayUrl()}</span>
+              <input
+                type="text"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                placeholder="link-kampanye"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-3 mt-6">
+          <button onClick={onClose} className="flex-1 px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-xl font-medium transition-all duration-200">
+            Batal
+          </button>
+          <button onClick={handleSave} className="flex-1 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg">
+            Simpan
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
 
 const AdminPanel = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -16,6 +102,7 @@ const AdminPanel = () => {
   const [campaignTitle, setCampaignTitle] = useState("");
   const [campaignDescription, setCampaignDescription] = useState("");
   const [campaignLink, setCampaignLink] = useState("");
+  const { getDisplayUrl } = useDynamicUrl();
 
   // Cropping states
   const [showCroppingModal, setShowCroppingModal] = useState(false);
@@ -30,6 +117,14 @@ const AdminPanel = () => {
 
   // Navigation state
   const [activeTab, setActiveTab] = useState<"upload" | "list">("upload");
+
+  // List state - sama seperti TwibbonList
+  const [twibbons, setTwibbons] = useState<Twibbon[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [editingTwibbon, setEditingTwibbon] = useState<Twibbon | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingTwibbon, setDeletingTwibbon] = useState<Twibbon | null>(null);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -114,6 +209,101 @@ const AdminPanel = () => {
     window.location.href = "/";
   };
 
+  // Fetch twibbons - sama seperti pattern TwibbonList
+  const fetchTwibbons = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/twibbons");
+      const data = await response.json();
+      if (data.success) {
+        setTwibbons(data.data);
+      } else {
+        handleError("Gagal mengambil data twibbon");
+      }
+    } catch {
+      handleError("Terjadi kesalahan saat mengambil data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle edit twibbon
+  const handleEditTwibbon = (twibbon: Twibbon) => {
+    setEditingTwibbon(twibbon);
+    setShowEditModal(true);
+  };
+
+  // Handle delete twibbon
+  const handleDeleteTwibbon = (twibbon: Twibbon) => {
+    setDeletingTwibbon(twibbon);
+    setShowDeleteModal(true);
+  };
+
+  // Confirm delete
+  const confirmDelete = async () => {
+    if (!deletingTwibbon) return;
+
+    try {
+      // Update existing twibbon via API endpoint yang sudah ada
+      const response = await fetch("/api/twibbons", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "delete",
+          id: deletingTwibbon.id,
+        }),
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        setShowSuccessModal(true);
+        fetchTwibbons(); // Refresh list
+      } else {
+        handleError("Gagal menghapus twibbon");
+      }
+    } catch {
+      handleError("Terjadi kesalahan saat menghapus twibbon");
+    } finally {
+      setShowDeleteModal(false);
+      setDeletingTwibbon(null);
+    }
+  };
+
+  // Save edit
+  const saveEdit = async (editedData: Partial<Twibbon>) => {
+    if (!editingTwibbon) return;
+
+    try {
+      // Update existing twibbon via API endpoint yang sudah ada
+      const response = await fetch("/api/twibbons", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "update",
+          id: editingTwibbon.id,
+          ...editedData,
+        }),
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        setShowSuccessModal(true);
+        fetchTwibbons(); // Refresh list
+      } else {
+        handleError("Gagal mengupdate twibbon");
+      }
+    } catch {
+      handleError("Terjadi kesalahan saat mengupdate twibbon");
+    } finally {
+      setShowEditModal(false);
+      setEditingTwibbon(null);
+    }
+  };
+
   const [state, formAction, isPending] = useActionState(async (prevState: StateProps | undefined, formData: FormData) => {
     if (!imagePreview) {
       handleError("Gambar twibbon belum diupload!");
@@ -134,6 +324,13 @@ const AdminPanel = () => {
       setShowSuccessModal(true);
     }
   }, [state?.status]);
+
+  // Fetch twibbons when list tab is active
+  useEffect(() => {
+    if (activeTab === "list") {
+      fetchTwibbons();
+    }
+  }, [activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   console.log(state?.status);
   const error = state && state.fields ? JSON.parse(state.fields) : null;
@@ -387,7 +584,8 @@ const AdminPanel = () => {
                         </motion.label>
                         <motion.div className="flex" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3, delay: 0.5 }}>
                           <span className="inline-flex items-center px-2 sm:px-3 lg:px-4 py-2.5 sm:py-3 rounded-l-lg sm:rounded-l-xl border-2 border-r-0 border-[#0268f8] border-opacity-30 bg-gray-50 text-gray-500 text-xs sm:text-sm">
-                            frame.id/id/twibbon/
+                            {getDisplayUrl()}
+                            {/* {campaignLink} */}
                           </span>
                           <motion.input
                             type="text"
@@ -441,27 +639,68 @@ const AdminPanel = () => {
               <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-gray-900">Daftar Twibbon</h1>
                 <div className="text-sm text-gray-500">
-                  Total: <span className="font-semibold">0 twibbon</span>
+                  Total: <span className="font-semibold">{twibbons.length} twibbon</span>
                 </div>
               </div>
 
-              <div className="bg-gray-50 rounded-xl p-8 text-center">
-                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                    />
-                  </svg>
+              {loading ? (
+                <div className="bg-gray-50 rounded-xl p-8 text-center">
+                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Memuat data...</h3>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Belum ada twibbon</h3>
-                <p className="text-gray-600 mb-4">Mulai buat twibbon pertama Anda di tab Upload</p>
-                <button onClick={() => setActiveTab("upload")} className="px-6 py-3 bg-[#0268f8] hover:bg-[#0256d6] text-white rounded-xl font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg">
-                  Buat Twibbon
-                </button>
-              </div>
+              ) : twibbons.length === 0 ? (
+                <div className="bg-gray-50 rounded-xl p-8 text-center">
+                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Belum ada twibbon</h3>
+                  <p className="text-gray-600 mb-4">Mulai buat twibbon pertama Anda di tab Upload</p>
+                  <button onClick={() => setActiveTab("upload")} className="px-6 py-3 bg-[#0268f8] hover:bg-[#0256d6] text-white rounded-xl font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg">
+                    Buat Twibbon
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {twibbons.map((twibbon) => (
+                    <div key={twibbon.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200">
+                      {/* Thumbnail - sama seperti TwibbonList */}
+                      <div className="aspect-square bg-gray-100 relative">{twibbon.thumbnail && <Image src={`/api/images/twibbons/thumbnail/${twibbon.thumbnail}`} alt={twibbon.name} fill className="object-cover" />}</div>
+
+                      {/* Content */}
+                      <div className="p-4">
+                        <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{twibbon.name}</h3>
+                        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{twibbon.description}</p>
+                        <p className="text-xs text-gray-500 mb-2">
+                          {getDisplayUrl()}
+                          {twibbon.slug}
+                        </p>
+                        <div className="text-xs text-gray-400 mb-4">{(twibbon.downloads + twibbon.shares).toLocaleString()} dukungan</div>
+
+                        {/* Actions */}
+                        <div className="flex gap-2">
+                          <button onClick={() => handleEditTwibbon(twibbon)} className="flex-1 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded-lg transition-colors duration-200">
+                            Edit
+                          </button>
+                          <button onClick={() => handleDeleteTwibbon(twibbon)} className="flex-1 px-3 py-2 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg transition-colors duration-200">
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -546,6 +785,39 @@ const AdminPanel = () => {
             <button onClick={closeErrorModal} className="w-full px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg">
               Oke, Saya Mengerti
             </button>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {showEditModal && editingTwibbon && <EditTwibbonModal twibbon={editingTwibbon} onClose={() => setShowEditModal(false)} onSave={saveEdit} />}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && deletingTwibbon && (
+        <div className="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }} className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 text-center">
+            {/* Warning Icon */}
+            <div className="mb-4">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
+                <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Confirmation Message */}
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Hapus Twibbon</h3>
+            <p className="text-gray-600 mb-6">Apakah Anda yakin ingin menghapus twibbon &quot;{deletingTwibbon.name}&quot;? Tindakan ini tidak dapat dibatalkan.</p>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <button onClick={() => setShowDeleteModal(false)} className="flex-1 px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-xl font-medium transition-all duration-200">
+                Batal
+              </button>
+              <button onClick={confirmDelete} className="flex-1 px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg">
+                Hapus
+              </button>
+            </div>
           </motion.div>
         </div>
       )}

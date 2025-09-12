@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useDynamicUrl } from "@/hooks/useDynamicUrl";
 
 interface Twibbon {
   id: number;
@@ -23,6 +24,8 @@ interface TwibbonListProps {
 }
 
 export default function TwibbonList({ twibbons, loading }: TwibbonListProps) {
+  const { getTwibbonUrl } = useDynamicUrl();
+
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -37,7 +40,7 @@ export default function TwibbonList({ twibbons, loading }: TwibbonListProps) {
   };
 
   return (
-    <section className="bg-white-500 mb-11">
+    <section id="lagi-viral" className="bg-white-500 mb-11">
       <div className="container px-4 py-4 md:py-1 max-w-5xl w-full mx-auto">
         <div className="flex items-center justify-start mb-6 md:mb-8">
           <h2 className="text-2xl md:text-2xl font-bold my-4 md:my-8 text-[#0268f8] flex items-center">
@@ -65,7 +68,7 @@ export default function TwibbonList({ twibbons, loading }: TwibbonListProps) {
                 whileTap={{ scale: 0.98 }}
                 className="bg-white rounded-lg overflow-hidden cursor-pointer"
               >
-                <Link href={`/twibbon/${twibbon.slug}`}>
+                <Link href={getTwibbonUrl(twibbon.slug)}>
                   <motion.div className="aspect-square relative w-full overflow-hidden" whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}>
                     <Image src={`/api/images/twibbons/thumbnail/${twibbon.thumbnail}`} alt={twibbon.name} fill className="object-cover" sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw" />
                   </motion.div>
@@ -100,13 +103,13 @@ export default function TwibbonList({ twibbons, loading }: TwibbonListProps) {
 
                     {/* Row 2: Jumlah Dukungan */}
                     <div className="flex items-center mb-0.5 md:mb-1">
-                      <Image src="/images/icon-orang.png" alt="Icon Orang" width={10} height={10} className="mr-1 w-2.5 h-2.5 md:w-3 md:h-3" />
+                      <Image src="/images/orang2.png" alt="Icon Orang" width={200} height={200} className="mr-1 w-2.5 h-2.5 md:w-4 md:h-3" />
                       <span className="text-gray-600 text-[10px] md:text-xs">{(twibbon.downloads + twibbon.shares).toLocaleString()} dukungan</span>
                     </div>
 
                     {/* Row 3: Waktu Pembuatan */}
                     <div className="flex items-center">
-                      <Image src="/images/icon-jam.png" alt="Icon Jam" width={10} height={10} className="mr-1 w-2.5 h-2.5 md:w-3 md:h-3" />
+                      <Image src="/images/jam.png" alt="Icon Jam" width={200} height={200} className="mr-1 w-2.5 h-2.5 md:w-3 md:h-3" />
                       <span className="text-gray-600 text-[10px] md:text-xs">{formatTimeAgo(twibbon.created_at)}</span>
                     </div>
                   </div>

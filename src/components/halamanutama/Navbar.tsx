@@ -17,6 +17,20 @@ export default function Navbar() {
     setIsSlideMenuOpen(!isSlideMenuOpen);
   };
 
+  // Smooth scroll to Lagi Viral section
+  const scrollToViral = () => {
+    const element = document.getElementById("lagi-viral");
+    if (element) {
+      element.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+    // Close mobile menu if open
+    setIsMenuOpen(false);
+    setIsSlideMenuOpen(false);
+  };
+
   return (
     <>
       {/* Fixed Navbar */}
@@ -195,9 +209,9 @@ export default function Navbar() {
                   <Link href="/tentang-kami" className="block text-white hover:text-orange-300 transition-colors py-2">
                     Tentang Kami
                   </Link>
-                  <Link href="/viral" className="block text-white hover:text-orange-300 transition-colors py-2">
+                  <button onClick={scrollToViral} className="block text-white hover:text-orange-300 transition-colors py-2 w-full text-left">
                     Lagi Viral
-                  </Link>
+                  </button>
                   <Link href="/pusat-bantuan" className="block text-white hover:text-orange-300 transition-colors py-2">
                     Pusat Bantuan
                   </Link>
@@ -236,9 +250,9 @@ export default function Navbar() {
                     <Link href="/tentang-kami" className="block text-white hover:text-orange-300 transition-colors text-lg font-medium">
                       Tentang Kami
                     </Link>
-                    <Link href="/viral" className="block text-white hover:text-orange-300 transition-colors text-lg font-medium">
+                    <button onClick={scrollToViral} className="block text-white hover:text-orange-300 transition-colors text-lg font-medium text-left">
                       Lagi Viral
-                    </Link>
+                    </button>
                     <Link href="/pusat-bantuan" className="block text-white hover:text-orange-300 transition-colors text-lg font-medium">
                       Pusat Bantuan
                     </Link>
