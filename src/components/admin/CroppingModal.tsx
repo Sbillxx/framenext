@@ -144,7 +144,7 @@ export default function CroppingModal({ twibbonFrame, onClose, onCropComplete }:
 
   useEffect(() => {
     draw();
-  }, [foto, overlay, pos]);
+  });
 
   // ================= DESKTOP (mouse + scroll) =================
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
