@@ -41,7 +41,7 @@ export default function TwibbonList({ twibbons, loading }: TwibbonListProps) {
       <div className="container px-4 py-4 md:py-1 max-w-5xl w-full mx-auto">
         <div className="flex items-center justify-start mb-6 md:mb-8">
           <h2 className="text-2xl md:text-2xl font-bold my-4 md:my-8 text-[#0268f8] flex items-center">
-            <Image src="/images/fire2.png" alt="Viral Icon" width={48} height={48} className="mr-3 w-12 h-12 md:w-8 md:h-10 md:mr-5" />
+            <Image src="/images/fire2.png" alt="Viral Icon" width={48} height={48} className="mr-3 w-8 h-10 md:w-8 md:h-10 md:mr-5" />
             <span className="text-[#0268f8]">Lagi Viral</span>
           </h2>
         </div>
