@@ -179,7 +179,7 @@ export default function SearchDropdown({ className = "", placeholder = "Cari Kam
                     d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.467-.798-6.086-2.134L3 15l1.914-2.134A7.962 7.962 0 0112 9a7.962 7.962 0 017.086 4.134L21 15l-2.914-2.134A7.962 7.962 0 0116 15z"
                   />
                 </svg>
-                <p className="text-sm">Tidak ada hasil untuk "{searchTerm}"</p>
+                <p className="text-sm">Tidak ada hasil untuk &quot;{searchTerm}&quot;</p>
                 <p className="text-xs text-gray-400 mt-1">Coba kata kunci lain</p>
               </div>
             )}
@@ -235,7 +235,7 @@ export default function SearchDropdown({ className = "", placeholder = "Cari Kam
                       <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                       </svg>
-                      Lihat semua hasil untuk "{searchTerm}"
+                      Lihat semua hasil untuk &quot;{searchTerm}&quot;
                     </Link>
                   </div>
                 )}
