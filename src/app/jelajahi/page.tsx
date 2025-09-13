@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -20,7 +20,7 @@ interface Twibbon {
   creator?: string;
 }
 
-export default function JelajahiPage() {
+function JelajahiContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [twibbons, setTwibbons] = useState<Twibbon[]>([]);
@@ -230,5 +230,46 @@ export default function JelajahiPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function JelajahiPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50">
+          {/* Loading Header */}
+          <header className="bg-white shadow-sm">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center py-4">
+                <div className="text-2xl font-bold text-gray-900">TWIBBON</div>
+                <div className="animate-pulse bg-gray-200 h-8 w-32 rounded"></div>
+              </div>
+            </div>
+          </header>
+
+          {/* Loading Content */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="animate-pulse">
+              <div className="bg-gray-200 h-8 w-64 rounded mb-6"></div>
+              <div className="bg-gray-200 h-12 w-full rounded mb-4"></div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div className="bg-gray-200 h-48"></div>
+                    <div className="p-4 space-y-3">
+                      <div className="bg-gray-200 h-4 rounded"></div>
+                      <div className="bg-gray-200 h-3 w-3/4 rounded"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <JelajahiContent />
+    </Suspense>
   );
 }
