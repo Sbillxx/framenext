@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { getAllTwibbon } from "@/lib/action";
 
 interface Twibbon {
   id: number;
@@ -11,17 +12,30 @@ interface Twibbon {
   description: string;
   filename: string;
   url: string;
+  downloads: number;
+  shares: number;
   created_at: string;
+  slug: string;
+  thumbnail: string;
   creator?: string;
 }
 
 export default function JelajahiPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [twibbons, setTwibbons] = useState<Twibbon[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("trending");
   const [filteredTwibbons, setFilteredTwibbons] = useState<Twibbon[]>([]);
+
+  // Get search query from URL
+  useEffect(() => {
+    const searchQuery = searchParams?.get("search");
+    if (searchQuery) {
+      setSearchTerm(searchQuery);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     fetchTwibbons();
@@ -33,13 +47,22 @@ export default function JelajahiPage() {
 
   const fetchTwibbons = async () => {
     try {
-      const response = await fetch("/api/twibbons");
-      const data = await response.json();
-      if (data.success) {
-        setTwibbons(data.data);
+      console.log("🚀 Jelajahi: Fetching twibbons using server action...");
+      setLoading(true);
+
+      // Menggunakan server action getAllTwibbon
+      const result = await getAllTwibbon();
+
+      if (result.success && result.data) {
+        console.log("✅ Jelajahi: Twibbons loaded successfully:", result.count);
+        setTwibbons(result.data);
+      } else {
+        console.error("❌ Jelajahi: Failed to fetch twibbons:", result.error);
+        setTwibbons([]);
       }
     } catch (error) {
-      console.error("Error fetching twibbons:", error);
+      console.error("❌ Jelajahi: Error fetching twibbons:", error);
+      setTwibbons([]);
     } finally {
       setLoading(false);
     }
@@ -160,10 +183,10 @@ export default function JelajahiPage() {
         {filteredTwibbons.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredTwibbons.map((twibbon) => (
-              <div key={twibbon.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push(`/twibbon/${twibbon.id}`)}>
+              <div key={twibbon.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push(`/twibbon/${twibbon.slug}`)}>
                 {/* Twibbon Image */}
                 <div className="relative h-48 bg-gray-200">
-                  <Image src={twibbon.url} alt={twibbon.name} fill className="object-contain" />
+                  <Image src={`/api/images/twibbons/thumbnail/${twibbon.thumbnail}`} alt={twibbon.name} fill className="object-contain" />
                 </div>
 
                 {/* Twibbon Info */}
@@ -181,7 +204,7 @@ export default function JelajahiPage() {
                       <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
-                      <span>0 dukungan</span>
+                      <span>{(twibbon.downloads + twibbon.shares).toLocaleString()} dukungan</span>
                     </div>
                     <div className="flex items-center space-x-1">
                       <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

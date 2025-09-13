@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Cropper from "react-easy-crop";
+import { downloadCanvasImage } from "@/lib/utils/download";
 
 interface Twibbon {
   id: number;
@@ -190,25 +191,18 @@ export default function TwibbonDetail() {
           // Then draw the twibbon frame on top (this will overlay the frame)
           ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
 
-          // Convert to blob and download
-          canvas.toBlob((blob) => {
-            if (blob) {
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = `twibbon-${twibbon.name}.png`;
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-              URL.revokeObjectURL(url);
+          // Download using Safari-friendly utility
+          downloadCanvasImage(canvas, {
+            filename: `twibbon-${twibbon.name}.png`,
+            title: `Twibbon - ${twibbon.name}`,
+            description: "Twibbon Anda berhasil dibuat! Simpan gambar ini ke galeri atau bagikan ke teman-teman.",
+          });
 
-              // Update download count
-              updateDownloadCount();
+          // Update download count
+          updateDownloadCount();
 
-              // Show share layout
-              setShowShareLayout(true);
-            }
-          }, "image/png");
+          // Show share layout
+          setShowShareLayout(true);
         };
         userImg.src = userImage;
       };

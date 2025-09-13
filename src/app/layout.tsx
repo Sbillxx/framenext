@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  icons: {
+    icon: "/favicon.ico",
+  },
   title: "Frame ID - Twibbon Maker",
   description: "Create beautiful twibbons with Frame ID",
 };

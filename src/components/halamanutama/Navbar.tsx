@@ -4,17 +4,31 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
+import SearchDropdown from "@/components/SearchDropdown";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSlideMenuOpen, setIsSlideMenuOpen] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+    // Close mobile search when menu opens
+    if (!isMenuOpen) {
+      setShowMobileSearch(false);
+    }
   };
 
   const toggleSlideMenu = () => {
     setIsSlideMenuOpen(!isSlideMenuOpen);
+  };
+
+  const toggleMobileSearch = () => {
+    setShowMobileSearch(!showMobileSearch);
+    // Close menu when mobile search opens
+    if (!showMobileSearch) {
+      setIsMenuOpen(false);
+    }
   };
 
   // Smooth scroll to Lagi Viral section
@@ -53,21 +67,7 @@ export default function Navbar() {
           {/* Right: Search Box + Button + Hamburger */}
           <div className="flex items-center space-x-4 md:space-x-10">
             {/* Search Box - Hidden on mobile */}
-            {/* <div className="relative group hidden md:block">
-              <input
-                type="text"
-                placeholder="Cari Kampanye"
-                className="pl-4 pr-10 py-3 rounded-full bg-blue-500 border-2 border-white text-white placeholder-white text-sm focus:outline-none focus:ring-2 focus:ring-white w-100 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:border-blue-200 hover:shadow-lg focus:bg-blue-600 focus:border-blue-200 focus:shadow-lg transform hover:scale-105 focus:scale-105"
-              />
-              <svg
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white transition-all duration-300 ease-in-out group-hover:scale-110 group-hover:text-blue-200"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div> */}
+            <SearchDropdown className="hidden md:block w-80" placeholder="Cari Kampanye" />
 
             {/* Orange Button - Hidden on mobile */}
             <Link href="/blank-page">
@@ -120,40 +120,60 @@ export default function Navbar() {
               </motion.svg>
             </motion.button>
 
-            {/* Mobile: Search Icon */}
-            <button className="md:hidden p-2 rounded-md hover:bg-white hover:bg-opacity-10 transition-colors">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
+            {/* Mobile: Search Icon - Hidden when menu is open */}
+            <AnimatePresence>
+              {!isMenuOpen && (
+                <motion.button
+                  onClick={toggleMobileSearch}
+                  className="md:hidden p-2 rounded-md hover:bg-white hover:bg-opacity-10 transition-colors"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  initial={{ opacity: 1, scale: 1 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <motion.svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" animate={showMobileSearch ? { rotate: 90 } : { rotate: 0 }} transition={{ duration: 0.2 }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </motion.svg>
+                </motion.button>
+              )}
+            </AnimatePresence>
 
-            {/* Hamburger Menu (3 lines) */}
-            <motion.button
-              onClick={toggleMenu}
-              className="p-2 rounded-md hover:bg-white hover:bg-opacity-10 transition-colors md:hidden"
-              whileHover={{ scale: 1.1, rotate: 5 }}
-              whileTap={{ scale: 0.9, rotate: -5 }}
-              transition={{ duration: 0.2, ease: "easeInOut" }}
-            >
-              <motion.svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" animate={isMenuOpen ? { rotate: 180 } : { rotate: 0 }} transition={{ duration: 0.3, ease: "easeInOut" }}>
-                <motion.path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                  animate={
-                    isMenuOpen
-                      ? {
-                          d: "M6 18L18 6M6 6l12 12",
-                        }
-                      : {
-                          d: "M4 6h16M4 12h16M4 18h16",
-                        }
-                  }
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                />
-              </motion.svg>
-            </motion.button>
+            {/* Hamburger Menu (3 lines) - Hidden when mobile search is open */}
+            <AnimatePresence>
+              {!showMobileSearch && (
+                <motion.button
+                  onClick={toggleMenu}
+                  className="p-2 rounded-md hover:bg-white hover:bg-opacity-10 transition-colors md:hidden"
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  whileTap={{ scale: 0.9, rotate: -5 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                  initial={{ opacity: 1, scale: 1 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                >
+                  <motion.svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" animate={isMenuOpen ? { rotate: 180 } : { rotate: 0 }} transition={{ duration: 0.3, ease: "easeInOut" }}>
+                    <motion.path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6h16M4 12h16M4 18h16"
+                      animate={
+                        isMenuOpen
+                          ? {
+                              d: "M6 18L18 6M6 6l12 12",
+                            }
+                          : {
+                              d: "M4 6h16M4 12h16M4 18h16",
+                            }
+                      }
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                    />
+                  </motion.svg>
+                </motion.button>
+              )}
+            </AnimatePresence>
           </div>
         </nav>
 
@@ -169,31 +189,9 @@ export default function Navbar() {
             >
               <div className="px-4 py-6 space-y-4">
                 {/* Search Box for Mobile */}
-                {/* <motion.div className="relative" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.4, delay: 0.1 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <motion.input
-                    type="text"
-                    placeholder="Cari Kampanye"
-                    className="w-full pl-4 pr-10 py-3 rounded-full bg-blue-500 border-2 border-white text-white placeholder-white text-sm focus:outline-none focus:ring-2 focus:ring-white transition-all duration-300"
-                    whileFocus={{
-                      scale: 1.02,
-                      boxShadow: "0 0 0 3px rgba(255, 255, 255, 0.3)",
-                    }}
-                  />
-                  <motion.svg
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    whileHover={{
-                      scale: 1.2,
-                      rotate: 5,
-                      color: "#ff6600",
-                    }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </motion.svg>
-                </motion.div> */}
+                <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.4, delay: 0.1 }}>
+                  <SearchDropdown className="w-full" placeholder="Cari Kampanye" isMobile={true} onClose={() => setIsMenuOpen(false)} />
+                </motion.div>
 
                 {/* Mobile Menu Items */}
                 <div className="space-y-3">
@@ -231,7 +229,16 @@ export default function Navbar() {
 
       {/* Background Blur Overlay */}
       <AnimatePresence>
-        {isMenuOpen && <motion.div initial={{ opacity: 1 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="fixed inset-0  bg-opacity-20 backdrop-blur-3xl z-40 md:hidden" onClick={toggleMenu} />}
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+            animate={{ opacity: 1, backdropFilter: "blur(8px)" }}
+            exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 bg-opacity-10 backdrop-blur-md z-40 md:hidden"
+            onClick={toggleMenu}
+          />
+        )}
       </AnimatePresence>
 
       {/* Desktop Slide-in Menu */}
@@ -239,7 +246,14 @@ export default function Navbar() {
         {isSlideMenuOpen && (
           <>
             {/* Backdrop */}
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="fixed inset-0 bg-opacity-20 backdrop-blur-md z-40 hidden md:block" onClick={toggleSlideMenu} />
+            <motion.div
+              initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+              animate={{ opacity: 1, backdropFilter: "blur(8px)" }}
+              exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0  bg-opacity-15 backdrop-blur-md z-40 hidden md:block"
+              onClick={toggleSlideMenu}
+            />
 
             {/* Slide Menu */}
             <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 25, stiffness: 200 }} className="fixed top-0 right-0 h-full w-135 bg-[#0268f8] z-50 hidden md:block shadow-2xl">
@@ -285,6 +299,45 @@ export default function Navbar() {
                   </svg>
                   <span className="text-sm">Bahasa Indonesia</span>
                 </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Mobile Search Overlay */}
+      <AnimatePresence>
+        {showMobileSearch && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+              animate={{ opacity: 1, backdropFilter: "blur(12px)" }}
+              exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0  bg-opacity-20 backdrop-blur-lg z-50 md:hidden"
+              onClick={toggleMobileSearch}
+            />
+
+            {/* Search Modal */}
+            <motion.div
+              initial={{ opacity: 0, y: -50, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -50, scale: 0.9 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="fixed top-20 left-4 right-4 z-50 md:hidden"
+            >
+              <div className="bg-[#0268f8] rounded-2xl p-4 shadow-2xl">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-white font-semibold text-lg">Cari Kampanye</h3>
+                  <motion.button onClick={toggleMobileSearch} className="p-2 hover:bg-white hover:bg-opacity-10 rounded-full transition-colors" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </motion.button>
+                </div>
+
+                <SearchDropdown className="w-full" placeholder="Ketik untuk mencari..." isMobile={true} onClose={toggleMobileSearch} />
               </div>
             </motion.div>
           </>

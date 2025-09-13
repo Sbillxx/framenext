@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect, ChangeEvent } from "react";
+import { downloadCanvasImage } from "@/lib/utils/download";
 
 type AnyTouch = Touch | React.Touch;
 
@@ -43,19 +44,13 @@ export default function TwibbonPage() {
     }
 
     if (overlay) {
-      ctx.drawImage(
-        overlay,
-        0,
-        0,
-        canvasRef.current.width,
-        canvasRef.current.height
-      );
+      ctx.drawImage(overlay, 0, 0, canvasRef.current.width, canvasRef.current.height);
     }
   };
 
   useEffect(() => {
     draw();
-  }, [foto, overlay, pos]);
+  });
 
   // upload foto
   const handleUpload = (e: ChangeEvent<HTMLInputElement>) => {
@@ -120,12 +115,9 @@ export default function TwibbonPage() {
   };
 
   // ================= MOBILE (touch gestures) =================
-  const getDistance = (t1: AnyTouch, t2: AnyTouch) =>
-    Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+  const getDistance = (t1: AnyTouch, t2: AnyTouch) => Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
 
-  const getAngle = (t1: AnyTouch, t2: AnyTouch) =>
-    (Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180) /
-    Math.PI;
+  const getAngle = (t1: AnyTouch, t2: AnyTouch) => (Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180) / Math.PI;
 
   const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
     if (!foto) return;
@@ -152,11 +144,7 @@ export default function TwibbonPage() {
         x: t.clientX - offset.x,
         y: t.clientY - offset.y,
       }));
-    } else if (
-      e.touches.length === 2 &&
-      lastTouchDist &&
-      lastTouchAngle !== null
-    ) {
+    } else if (e.touches.length === 2 && lastTouchDist && lastTouchAngle !== null) {
       const newDist = getDistance(e.touches[0], e.touches[1]);
       const newAngle = getAngle(e.touches[0], e.touches[1]);
 
@@ -177,13 +165,15 @@ export default function TwibbonPage() {
     setLastTouchAngle(null);
   };
 
-  // ================= DOWNLOAD =================
+  // ================= DOWNLOAD (Safari-friendly) =================
   const handleDownload = () => {
     if (!canvasRef.current) return;
-    const link = document.createElement("a");
-    link.download = "hasil-twibbon.png";
-    link.href = canvasRef.current.toDataURL("image/png");
-    link.click();
+
+    downloadCanvasImage(canvasRef.current, {
+      filename: "hasil-twibbon.png",
+      title: "Hasil Twibbon",
+      description: "Hasil twibbon Anda berhasil dibuat! Simpan gambar ini ke galeri atau bagikan ke teman-teman.",
+    });
   };
 
   return (
@@ -212,10 +202,7 @@ export default function TwibbonPage() {
         📱 1 jari = drag | 2 jari pinch = zoom | 2 jari putar = rotate
       </p>
 
-      <button
-        onClick={handleDownload}
-        className="px-4 py-2 bg-green-600 text-white rounded"
-      >
+      <button onClick={handleDownload} className="px-4 py-2 bg-green-600 text-white rounded">
         Download
       </button>
     </div>

@@ -458,177 +458,161 @@ const AdminPanel = () => {
                 </>
               ) : (
                 // Next Step: Campaign Details Form
-                <form action={formAction} className="space-y-4 sm:space-y-6 lg:space-y-8">
-                  {/* Header */}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      <svg className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                      </svg>
-                      <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Rincian Kampanye</h1>
-                    </div>
-                    <button
-                      onClick={handleBack}
-                      type="button"
-                      className="w-full sm:w-auto px-4 sm:px-6 lg:px-7 py-2 sm:py-1 bg-white border-2 border-gray-300 text-black hover:bg-gray-50 hover:border-gray-400 rounded-2xl sm:rounded-4xl font-medium transition-all duration-200 shadow-sm hover:shadow-md text-sm sm:text-base"
-                    >
-                      Kembali
-                    </button>
-                  </div>
-
-                  {/* Two Column Layout */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
-                    {/* Left: Frame Preview */}
-                    <div className="space-y-3 sm:space-y-4">
-                      <div className="border-2 border-gray-200 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-6 bg-gray-50">
-                        <div className="relative w-full flex items-center justify-center">
-                          <Image src={croppedImage || imagePreview!} alt="Frame preview" width={400} height={400} className="max-w-full max-h-80 sm:max-h-96 object-contain rounded-lg" style={{ width: "auto", height: "auto" }} />
-                        </div>
-                      </div>
-
-                      {/* Set Thumbnail Button */}
-                      <button
-                        onClick={handleOpenCropping}
-                        type="button"
-                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg sm:rounded-xl flex items-center justify-center gap-2 transition-all duration-200 hover:scale-105 hover:shadow-lg text-sm sm:text-base"
-                      >
-                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                          />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                <div className="bg-white rounded-2xl lg:rounded-4xl shadow-sm border border-gray-100 p-4 sm:p-6 lg:p-8">
+                  <form action={formAction} className="space-y-4 sm:space-y-6 lg:space-y-8">
+                    {/* Header */}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 pb-4 sm:pb-6 border-b border-gray-100">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <svg className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
-                        Atur Thumbnail
+                        <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Rincian Kampanye</h1>
+                      </div>
+                      <button
+                        onClick={handleBack}
+                        type="button"
+                        className="w-full sm:w-auto px-4 sm:px-6 lg:px-7 py-2 sm:py-3 bg-white border-2 border-gray-300 text-black hover:bg-gray-50 hover:border-gray-400 rounded-xl sm:rounded-2xl font-medium transition-all duration-200 shadow-sm hover:shadow-md text-sm sm:text-base"
+                      >
+                        Kembali
                       </button>
                     </div>
 
-                    {/* Right: Form */}
-                    <div className="space-y-3 sm:space-y-4 lg:space-y-6">
-                      {/* Campaign Title */}
-                      <div>
-                        <motion.label className="block text-sm font-medium text-black mb-2" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-                          Judul Kampanye
-                        </motion.label>
-                        <motion.input
-                          type="text"
-                          value={campaignTitle}
-                          name="title"
-                          onChange={(e) => setCampaignTitle(e.target.value)}
-                          placeholder="Dapat berupa angka, tulisan atau karakter special"
-                          className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-[#0268f8] border-opacity-30 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#0268f8] focus:border-[#0268f8] focus:border-opacity-100 transition-all duration-200 relative text-gray-900 placeholder-gray-500 text-sm sm:text-base"
-                          style={{
-                            boxShadow: "inset 0 0 0 1px #f97316",
-                          }}
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.3, delay: 0.1 }}
-                          whileFocus={{
-                            scale: 1.02,
-                            boxShadow: "inset 0 0 0 1px #f97316, 0 0 0 3px rgba(2, 104, 248, 0.1)",
-                          }}
-                          whileTap={{ scale: 0.98 }}
-                          onFocus={(e) => {
-                            e.target.style.boxShadow = "inset 0 0 0 1px #f97316, 0 0 0 3px rgba(2, 104, 248, 0.1)";
-                          }}
-                          onBlur={(e) => {
-                            e.target.style.boxShadow = "inset 0 0 0 1px #f97316";
-                          }}
-                        />
-                        <span className="text-xs italic text-red-500">{error && error?.title?.[0]}</span>
-                      </div>
-
-                      {/* Campaign Description */}
-                      <div>
-                        <motion.label className="block text-sm font-medium text-black mb-2" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.2 }}>
-                          Deskripsi (Opsional)
-                        </motion.label>
-                        <div className="relative">
-                          <motion.textarea
-                            value={campaignDescription}
-                            name="desc"
-                            onChange={(e) => setCampaignDescription(e.target.value)}
-                            placeholder="Bagikan rincian tentang kampanyemu untuk menarik dukungan"
-                            rows={3}
-                            maxLength={250}
-                            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-[#0268f8] border-opacity-30 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#0268f8] focus:border-[#0268f8] focus:border-opacity-100 transition-all duration-200 resize-none text-gray-900 placeholder-gray-500 text-sm sm:text-base"
-                            style={{
-                              boxShadow: "inset 0 0 0 1px #f97316",
-                            }}
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.3, delay: 0.3 }}
-                            whileFocus={{
-                              scale: 1.02,
-                              boxShadow: "inset 0 0 0 1px #f97316, 0 0 0 3px rgba(2, 104, 248, 0.1)",
-                            }}
-                            whileTap={{ scale: 0.98 }}
-                            onFocus={(e) => {
-                              e.target.style.boxShadow = "inset 0 0 0 1px #f97316, 0 0 0 3px rgba(2, 104, 248, 0.1)";
-                            }}
-                            onBlur={(e) => {
-                              e.target.style.boxShadow = "inset 0 0 0 1px #f97316";
-                            }}
-                          />
-                          <span className="text-xs italic text-red-500">{error && error?.desc?.[0]}</span>
-                          <div className="absolute bottom-2 right-2 text-xs text-gray-400">{campaignDescription.length}/250</div>
+                    {/* Two Column Layout */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-10">
+                      {/* Left: Frame Preview */}
+                      <div className="space-y-4 sm:space-y-5">
+                        <div className="bg-gray-50 border-2 border-gray-200 rounded-xl lg:rounded-2xl p-4 sm:p-6 lg:p-8">
+                          <div className="relative w-full flex items-center justify-center">
+                            <Image
+                              src={croppedImage || imagePreview!}
+                              alt="Frame preview"
+                              width={400}
+                              height={400}
+                              className="max-w-full max-h-64 sm:max-h-80 lg:max-h-96 object-contain rounded-lg shadow-sm"
+                              style={{ width: "auto", height: "auto" }}
+                            />
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Campaign Link */}
-                      <div>
-                        <motion.label className="block text-sm font-medium text-black mb-2" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.4 }}>
-                          Link Kampanye
-                        </motion.label>
-                        <motion.div className="flex" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3, delay: 0.5 }}>
-                          <span className="inline-flex items-center px-2 sm:px-3 lg:px-4 py-2.5 sm:py-3 rounded-l-lg sm:rounded-l-xl border-2 border-r-0 border-[#0268f8] border-opacity-30 bg-gray-50 text-gray-500 text-xs sm:text-sm">
-                            {getDisplayUrl()}
-                            {/* {campaignLink} */}
-                          </span>
-                          <motion.input
-                            type="text"
-                            value={campaignLink}
-                            name="slug"
-                            onChange={(e) => setCampaignLink(e.target.value)}
-                            placeholder="link-kampanye"
-                            className="flex-1 px-2 sm:px-3 lg:px-4 py-2.5 sm:py-3 border-2 border-[#0268f8] border-opacity-30 rounded-r-lg sm:rounded-r-xl focus:ring-2 focus:ring-[#0268f8] focus:border-[#0268f8] focus:border-opacity-100 transition-all duration-200 text-gray-900 placeholder-gray-500 text-sm sm:text-base"
-                            style={{
-                              boxShadow: "inset 0 0 0 1px #f97316",
-                            }}
-                            whileFocus={{
-                              scale: 1.02,
-                              boxShadow: "inset 0 0 0 1px #f97316, 0 0 0 3px rgba(2, 104, 248, 0.1)",
-                            }}
-                            whileTap={{ scale: 0.98 }}
-                            onFocus={(e) => {
-                              e.target.style.boxShadow = "inset 0 0 0 1px #f97316, 0 0 0 3px rgba(2, 104, 248, 0.1)";
-                            }}
-                            onBlur={(e) => {
-                              e.target.style.boxShadow = "inset 0 0 0 1px #f97316";
-                            }}
-                          />
-                        </motion.div>
-                        <span className="text-xs italic text-red-500">{error && error?.slug?.[0]}</span>
-                      </div>
-
-                      {/* Publish Button */}
-                      <div className="pt-2 sm:pt-4">
+                        {/* Set Thumbnail Button */}
                         <button
-                          onClick={handlePublish}
-                          type="submit"
-                          disabled={!campaignTitle.trim() || isPending}
-                          className={`w-full px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-white font-medium transition-all duration-200 text-sm sm:text-base ${
-                            campaignTitle.trim() ? "bg-[#0268f8] hover:bg-[#0256d6] hover:scale-105 hover:shadow-lg" : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                          }`}
+                          onClick={handleOpenCropping}
+                          type="button"
+                          className="w-full px-4 sm:px-5 py-3 sm:py-3.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl lg:rounded-2xl flex items-center justify-center gap-2 sm:gap-3 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg text-sm sm:text-base font-medium"
                         >
-                          {isPending ? "Sedang dipublish..." : "Publikasikan"}
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                            />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          Atur Thumbnail
                         </button>
                       </div>
+
+                      {/* Right: Form */}
+                      <div className="space-y-5 sm:space-y-6 lg:space-y-7">
+                        {/* Campaign Title */}
+                        <div>
+                          <motion.label className="block text-sm sm:text-base font-medium text-gray-900 mb-2 sm:mb-3" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+                            Judul Kampanye
+                          </motion.label>
+                          <motion.input
+                            type="text"
+                            value={campaignTitle}
+                            name="title"
+                            onChange={(e) => setCampaignTitle(e.target.value)}
+                            placeholder="Dapat berupa angka, tulisan atau karakter special"
+                            className="w-full px-4 sm:px-5 py-3 sm:py-4 border-2 border-gray-200 rounded-xl lg:rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-900 placeholder-gray-500 text-sm sm:text-base hover:border-gray-300 shadow-sm focus:shadow-md"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.3, delay: 0.1 }}
+                            whileFocus={{ scale: 1.01 }}
+                            whileTap={{ scale: 0.99 }}
+                          />
+                          {error && error?.title?.[0] && <span className="text-xs sm:text-sm text-red-500 mt-1 block">{error.title[0]}</span>}
+                        </div>
+
+                        {/* Campaign Description */}
+                        <div>
+                          <motion.label className="block text-sm sm:text-base font-medium text-gray-900 mb-2 sm:mb-3" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.2 }}>
+                            Deskripsi (Opsional)
+                          </motion.label>
+                          <div className="relative">
+                            <motion.textarea
+                              value={campaignDescription}
+                              name="desc"
+                              onChange={(e) => setCampaignDescription(e.target.value)}
+                              placeholder="Bagikan rincian tentang kampanyemu untuk menarik dukungan"
+                              rows={4}
+                              maxLength={250}
+                              className="w-full px-4 sm:px-5 py-3 sm:py-4 border-2 border-gray-200 rounded-xl lg:rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 resize-none text-gray-900 placeholder-gray-500 text-sm sm:text-base hover:border-gray-300 shadow-sm focus:shadow-md"
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ duration: 0.3, delay: 0.3 }}
+                              whileFocus={{ scale: 1.01 }}
+                              whileTap={{ scale: 0.99 }}
+                            />
+                            {error && error?.desc?.[0] && <span className="text-xs sm:text-sm text-red-500 mt-1 block">{error.desc[0]}</span>}
+                            <div className="absolute bottom-3 right-3 text-xs text-gray-400 bg-white px-1 rounded">{campaignDescription.length}/250</div>
+                          </div>
+                        </div>
+
+                        {/* Campaign Link */}
+                        <div>
+                          <motion.label className="block text-sm sm:text-base font-medium text-gray-900 mb-2 sm:mb-3" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.4 }}>
+                            Link Kampanye
+                          </motion.label>
+                          <motion.div
+                            className="flex rounded-xl lg:rounded-2xl overflow-hidden border-2 border-gray-200 hover:border-gray-300 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500 transition-all duration-200 shadow-sm focus-within:shadow-md"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.3, delay: 0.5 }}
+                          >
+                            <span className="inline-flex items-center px-3 sm:px-4 lg:px-5 py-3 sm:py-4 bg-gray-50 text-gray-600 text-xs sm:text-sm font-medium border-r border-gray-200">{getDisplayUrl()}</span>
+                            <motion.input
+                              type="text"
+                              value={campaignLink}
+                              name="slug"
+                              onChange={(e) => setCampaignLink(e.target.value)}
+                              placeholder="link-kampanye"
+                              className="flex-1 px-3 sm:px-4 py-3 sm:py-4 bg-white text-gray-900 placeholder-gray-500 text-sm sm:text-base focus:outline-none"
+                              whileTap={{ scale: 0.99 }}
+                            />
+                          </motion.div>
+                          {error && error?.slug?.[0] && <span className="text-xs sm:text-sm text-red-500 mt-1 block">{error.slug[0]}</span>}
+                        </div>
+
+                        {/* Publish Button */}
+                        <div className="pt-3 sm:pt-5">
+                          <button
+                            onClick={handlePublish}
+                            type="submit"
+                            disabled={!campaignTitle.trim() || isPending}
+                            className={`w-full px-4 sm:px-6 py-3.5 sm:py-4 rounded-xl lg:rounded-2xl font-semibold transition-all duration-200 text-sm sm:text-base shadow-lg ${
+                              campaignTitle.trim() ? "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white hover:scale-[1.02] hover:shadow-xl" : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            }`}
+                          >
+                            {isPending ? (
+                              <span className="flex items-center justify-center gap-2">
+                                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Sedang dipublish...
+                              </span>
+                            ) : (
+                              "Publikasikan"
+                            )}
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </form>
+                  </form>
+                </div>
               )}
             </>
           )}

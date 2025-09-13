@@ -1,9 +1,11 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useDynamicUrl } from "@/hooks/useDynamicUrl";
+import { getAllTwibbon } from "@/lib/action";
 
 interface Twibbon {
   id: number;
@@ -18,13 +20,58 @@ interface Twibbon {
   thumbnail: string;
 }
 
+// Props sekarang opsional - komponen bisa mengambil data sendiri
 interface TwibbonListProps {
-  twibbons: Twibbon[];
-  loading: boolean;
+  initialTwibbons?: Twibbon[];
+  initialLoading?: boolean;
+  autoFetch?: boolean; // Flag untuk auto fetch data
 }
 
-export default function TwibbonList({ twibbons, loading }: TwibbonListProps) {
+export default function TwibbonList({ initialTwibbons = [], initialLoading = true, autoFetch = true }: TwibbonListProps) {
   const { getTwibbonUrl } = useDynamicUrl();
+
+  // State untuk mengelola data internal
+  const [twibbons, setTwibbons] = useState<Twibbon[]>(initialTwibbons);
+  const [loading, setLoading] = useState<boolean>(initialLoading);
+  const [error, setError] = useState<string | null>(null);
+
+  // Function untuk fetch data menggunakan server action
+  const fetchTwibbons = async () => {
+    try {
+      console.log("🚀 TwibbonList: Fetching twibbons using server action...");
+      setLoading(true);
+      setError(null);
+
+      const result = await getAllTwibbon();
+
+      if (result.success && result.data) {
+        console.log("✅ TwibbonList: Twibbons loaded successfully:", result.count);
+        setTwibbons(result.data);
+      } else {
+        console.error("❌ TwibbonList: Failed to fetch twibbons:", result.error);
+        setError(result.error || "Failed to fetch twibbons");
+        setTwibbons([]);
+      }
+    } catch (error) {
+      console.error("❌ TwibbonList: Error fetching twibbons:", error);
+      setError("An error occurred while fetching twibbons");
+      setTwibbons([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Effect untuk auto fetch data saat component mount
+  useEffect(() => {
+    if (autoFetch && initialTwibbons.length === 0) {
+      fetchTwibbons();
+    }
+  }, [autoFetch, initialTwibbons.length]);
+
+  // Function untuk refresh data (bisa dipanggil dari luar)
+  const refreshTwibbons = () => {
+    fetchTwibbons();
+  };
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
@@ -42,17 +89,60 @@ export default function TwibbonList({ twibbons, loading }: TwibbonListProps) {
   return (
     <section id="lagi-viral" className="bg-white-500 mb-11">
       <div className="container px-4 py-4 md:py-1 max-w-5xl w-full mx-auto">
-        <div className="flex items-center justify-start mb-6 md:mb-8">
+        <div className="flex items-center justify-between mb-6 md:mb-8">
           <h2 className="text-2xl md:text-2xl font-bold my-4 md:my-8 text-[#0268f8] flex items-center">
             <Image src="/images/fire2.png" alt="Viral Icon" width={48} height={48} className="mr-3 w-8 h-10 md:w-8 md:h-10 md:mr-5" />
             <span className="text-[#0268f8]">Lagi Viral</span>
           </h2>
+
+          {/* Refresh Button */}
+          <motion.button
+            onClick={refreshTwibbons}
+            disabled={loading}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center px-3 py-1.5 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <svg className={`w-4 h-4 mr-1 ${loading ? "animate-spin" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            {loading ? "Loading..." : "Refresh"}
+          </motion.button>
         </div>
 
         {loading ? (
-          <p className="text-center text-gray-600">Loading twibbons...</p>
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
+            <p className="text-center text-gray-600">Loading twibbons...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-8 md:py-12">
+            <div className="text-red-400 mb-4">
+              <svg className="mx-auto h-8 w-8 md:h-12 md:w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="text-base md:text-lg font-medium text-gray-900 mb-2">Error Loading Twibbons</h3>
+            <p className="text-gray-600 text-sm md:text-base mb-4">{error}</p>
+            <motion.button onClick={refreshTwibbons} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              Try Again
+            </motion.button>
+          </div>
         ) : twibbons.length === 0 ? (
-          <p className="text-center text-gray-600">No twibbons found. Add some from the admin panel!</p>
+          <div className="text-center py-8 md:py-12">
+            <div className="text-gray-400 mb-4">
+              <svg className="mx-auto h-8 w-8 md:h-12 md:w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-base md:text-lg font-medium text-gray-900 mb-2">Belum ada twibbon viral</h3>
+            <p className="text-gray-600 text-sm md:text-base">Twibbon akan muncul di sini setelah ditambahkan oleh admin.</p>
+          </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8">
             {twibbons.map((twibbon, index) => (
@@ -116,24 +206,6 @@ export default function TwibbonList({ twibbons, loading }: TwibbonListProps) {
                 </Link>
               </motion.div>
             ))}
-          </div>
-        )}
-
-        {/* Empty State */}
-        {!loading && twibbons.length === 0 && (
-          <div className="text-center py-8 md:py-12">
-            <div className="text-gray-400 mb-4">
-              <svg className="mx-auto h-8 w-8 md:h-12 md:w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-            </div>
-            <h3 className="text-base md:text-lg font-medium text-gray-900 mb-2">Belum ada twibbon viral</h3>
-            <p className="text-gray-600 text-sm md:text-base">Twibbon akan muncul di sini setelah ditambahkan oleh admin.</p>
           </div>
         )}
       </div>
