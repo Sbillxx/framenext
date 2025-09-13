@@ -6,12 +6,6 @@ export const metadata: Metadata = {
   description: "Halaman Login admin khusus!",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{ children: ReactNode }>) {
-  return (
-    <html lang="en">
-      <body className="font-sans antialiased">{children}</body>
-    </html>
-  );
+export default function LoginLayout({ children }: Readonly<{ children: ReactNode }>) {
+  return children;
 }
