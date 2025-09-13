@@ -53,7 +53,7 @@ export default function Navbar() {
           {/* Right: Search Box + Button + Hamburger */}
           <div className="flex items-center space-x-4 md:space-x-10">
             {/* Search Box - Hidden on mobile */}
-            <div className="relative group hidden md:block">
+            {/* <div className="relative group hidden md:block">
               <input
                 type="text"
                 placeholder="Cari Kampanye"
@@ -67,7 +67,7 @@ export default function Navbar() {
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-            </div>
+            </div> */}
 
             {/* Orange Button - Hidden on mobile */}
             <Link href="/blank-page">
@@ -169,7 +169,7 @@ export default function Navbar() {
             >
               <div className="px-4 py-6 space-y-4">
                 {/* Search Box for Mobile */}
-                <motion.div className="relative" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.4, delay: 0.1 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                {/* <motion.div className="relative" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.4, delay: 0.1 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <motion.input
                     type="text"
                     placeholder="Cari Kampanye"
@@ -193,7 +193,7 @@ export default function Navbar() {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </motion.svg>
-                </motion.div>
+                </motion.div> */}
 
                 {/* Mobile Menu Items */}
                 <div className="space-y-3">
