@@ -209,7 +209,8 @@ export default function TwibbonList({ initialTwibbons = [], initialLoading = tru
           </div>
         )}
       </div>
-      <div className="flex justify-center w-full mt-6 md:mt-8">
+      {/* Button Selengkapnya - HIDDEN */}
+      {/* <div className="flex justify-center w-full mt-6 md:mt-8">
         <motion.button
           whileHover={{
             scale: 1.05,
@@ -219,16 +220,11 @@ export default function TwibbonList({ initialTwibbons = [], initialLoading = tru
           transition={{ type: "spring", stiffness: 300 }}
           className="relative px-4 md:px-6 py-2 md:py-3 rounded-full bg-[#ff6600] text-white font-semibold overflow-hidden group text-sm md:text-base"
         >
-          {/* Ripple animation */}
           <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition duration-500"></span>
-
-          {/* Text */}
           <span className="relative z-10 flex items-center">Selengkapnya</span>
-
-          {/* Glow effect */}
           <span className="absolute -inset-1 bg-gradient-to-r from-orange-400 to-orange-600 rounded-full blur opacity-0 group-hover:opacity-50 transition duration-500"></span>
         </motion.button>
-      </div>
+      </div> */}
     </section>
   );
 }

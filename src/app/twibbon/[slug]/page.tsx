@@ -7,6 +7,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import Cropper from "react-easy-crop";
 import { downloadCanvasImage } from "@/lib/utils/download";
+import { AnimatePresence } from "framer-motion";
 
 interface Twibbon {
   id: number;
@@ -247,8 +248,8 @@ export default function TwibbonDetail() {
       case "facebook":
         shareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
         break;
-      case "twitter":
-        shareLink = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+      case "telegram":
+        shareLink = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
         break;
       case "instagram":
         // Instagram doesn't support direct sharing, copy link
@@ -278,13 +279,47 @@ export default function TwibbonDetail() {
     }
   };
 
+  const [showCopySuccess, setShowCopySuccess] = useState(false);
+
   const copyText = async () => {
     if (twibbon?.description) {
       try {
-        await navigator.clipboard.writeText(twibbon.description);
-        alert("Teks berhasil disalin!");
+        // Try modern clipboard API first
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(twibbon.description);
+          setShowCopySuccess(true);
+          setTimeout(() => setShowCopySuccess(false), 3000);
+        } else {
+          // Fallback for mobile/older browsers
+          const textArea = document.createElement("textarea");
+          textArea.value = twibbon.description;
+          textArea.style.position = "fixed";
+          textArea.style.left = "-999999px";
+          textArea.style.top = "-999999px";
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+
+          try {
+            const successful = document.execCommand("copy");
+            if (successful) {
+              setShowCopySuccess(true);
+              setTimeout(() => setShowCopySuccess(false), 3000);
+            } else {
+              throw new Error("Copy command failed");
+            }
+          } catch (err) {
+            // Final fallback - show text in prompt
+            console.log(err);
+            prompt("Salin teks berikut:", twibbon.description);
+          } finally {
+            document.body.removeChild(textArea);
+          }
+        }
       } catch (error) {
         console.error("Error copying text:", error);
+        // Final fallback - show text in prompt
+        prompt("Salin teks berikut:", twibbon.description);
       }
     }
   };
@@ -590,15 +625,15 @@ export default function TwibbonDetail() {
                     Facebook
                   </motion.button>
                   <motion.button
-                    onClick={() => shareTwibbon("twitter")}
-                    className="bg-blue-400 hover:bg-blue-500 text-white py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl transition-colors flex items-center justify-center text-sm sm:text-base"
+                    onClick={() => shareTwibbon("telegram")}
+                    className="bg-blue-500 hover:bg-blue-600 text-white py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl transition-colors flex items-center justify-center text-sm sm:text-base"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
                     <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
+                      <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
                     </svg>
-                    Twitter
+                    Telegram
                   </motion.button>
                   <motion.button
                     onClick={() => shareTwibbon("instagram")}
@@ -623,6 +658,66 @@ export default function TwibbonDetail() {
           </div>
         </div>
       )}
+
+      {/* Copy Success Modal */}
+      <AnimatePresence>
+        {showCopySuccess && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }} className="fixed inset-0 bg-black/20 backdrop-blur-md flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{
+                duration: 0.25,
+                ease: [0.25, 0.46, 0.45, 0.94],
+                type: "spring",
+                stiffness: 300,
+                damping: 25,
+              }}
+              className="bg-white rounded-2xl p-6 sm:p-8 shadow-xl max-w-sm w-full text-center border border-gray-100"
+            >
+              {/* Success Icon */}
+              <motion.div
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{
+                  delay: 0.1,
+                  type: "spring",
+                  stiffness: 400,
+                  damping: 20,
+                }}
+                className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4"
+              >
+                <motion.svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 0.3, duration: 0.4, ease: "easeInOut" }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </motion.svg>
+              </motion.div>
+
+              {/* Success Message */}
+              <motion.h3 initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.3, ease: "easeOut" }} className="text-xl font-semibold text-gray-800 mb-2">
+                Berhasil!
+              </motion.h3>
+
+              <motion.p initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.3, ease: "easeOut" }} className="text-gray-600 mb-6 text-sm">
+                Teks berhasil disalin ke clipboard
+              </motion.p>
+
+              {/* Close Button */}
+              <motion.button
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.3, ease: "easeOut" }}
+                onClick={() => setShowCopySuccess(false)}
+                className="w-full bg-green-500 hover:bg-green-600 text-white py-2.5 px-6 rounded-xl font-medium transition-all duration-200 text-sm"
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+              >
+                Oke
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Hidden canvas for processing */}
       <canvas ref={canvasRef} className="hidden" />

@@ -548,7 +548,7 @@ const AdminPanel = () => {
                               onChange={(e) => setCampaignDescription(e.target.value)}
                               placeholder="Bagikan rincian tentang kampanyemu untuk menarik dukungan"
                               rows={4}
-                              maxLength={250}
+                              maxLength={500}
                               className="w-full px-4 sm:px-5 py-3 sm:py-4 border-2 border-gray-200 rounded-xl lg:rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 resize-none text-gray-900 placeholder-gray-500 text-sm sm:text-base hover:border-gray-300 shadow-sm focus:shadow-md"
                               initial={{ opacity: 0, scale: 0.95 }}
                               animate={{ opacity: 1, scale: 1 }}
@@ -557,7 +557,7 @@ const AdminPanel = () => {
                               whileTap={{ scale: 0.99 }}
                             />
                             {error && error?.desc?.[0] && <span className="text-xs sm:text-sm text-red-500 mt-1 block">{error.desc[0]}</span>}
-                            <div className="absolute bottom-3 right-3 text-xs text-gray-400 bg-white px-1 rounded">{campaignDescription.length}/250</div>
+                            <div className="absolute bottom-3 right-3 text-xs text-gray-400 bg-white px-1 rounded">{campaignDescription.length}/500</div>
                           </div>
                         </div>
 

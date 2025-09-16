@@ -7,7 +7,7 @@ import FeedbackModal from "@/components/FeedbackModal";
 import Navbar from "@/components/halamanutama/Navbar";
 import Hero from "@/components/halamanutama/Hero";
 import TwibbonList from "@/components/halamanutama/TwibbonList";
-import FeedbackButton from "@/components/halamanutama/FeedbackButton";
+// import FeedbackButton from "@/components/halamanutama/FeedbackButton";
 import Jumbotron from "@/components/halamanutama/Jumbotron";
 import Footer from "@/components/halamanutama/Footer";
 
@@ -39,8 +39,8 @@ export default function Home() {
 
       {/* footer */}
       <Footer />
-      {/* Feedback Button */}
-      <FeedbackButton onOpenModal={() => setShowFeedbackModal(true)} />
+      {/* Feedback Button - HIDDEN */}
+      {/* <FeedbackButton onOpenModal={() => setShowFeedbackModal(true)} /> */}
 
       {/* Feedback Modal */}
       <FeedbackModal isOpen={showFeedbackModal} onClose={() => setShowFeedbackModal(false)} />

@@ -6,7 +6,7 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
   },
   title: "Frame ID - Twibbon Maker",
-  description: "Create beautiful twibbons dengan Frame ID",
+  description: "Bikin twibbons gratis dengan Frame ID",
 };
 
 export default function RootLayout({
