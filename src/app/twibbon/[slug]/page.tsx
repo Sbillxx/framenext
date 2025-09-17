@@ -4,10 +4,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import Cropper from "react-easy-crop";
+import { motion, AnimatePresence } from "framer-motion";
 import { downloadCanvasImage } from "@/lib/utils/download";
-import { AnimatePresence } from "framer-motion";
 
 interface Twibbon {
   id: number;
@@ -21,18 +19,12 @@ interface Twibbon {
   thumbnail: string;
 }
 
-interface CropArea {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
+type AnyTouch = Touch | React.Touch;
 
 export default function TwibbonDetail() {
   const params = useParams();
   const router = useRouter();
   const [twibbon, setTwibbon] = useState<Twibbon | null>(null);
-  const [userImage, setUserImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [showShareLayout, setShowShareLayout] = useState(false);
@@ -40,9 +32,16 @@ export default function TwibbonDetail() {
     width: number;
     height: number;
   }>({ width: 1, height: 1 });
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<CropArea | null>(null);
+
+  // Canvas-based cropping states (same as admin)
+  const [foto, setFoto] = useState<HTMLImageElement | null>(null);
+  const [overlay, setOverlay] = useState<HTMLImageElement | null>(null);
+  const [pos, setPos] = useState({ x: 0, y: 0, scale: 1, rotation: 0 });
+  const [dragging, setDragging] = useState(false);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [lastTouchDist, setLastTouchDist] = useState<number | null>(null);
+  const [lastTouchAngle, setLastTouchAngle] = useState<number | null>(null);
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -89,76 +88,280 @@ export default function TwibbonDetail() {
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setUserImage(e.target?.result as string);
-        // Reset crop and zoom when new image is uploaded
-        setCrop({ x: 0, y: 0 });
-        setZoom(1);
-        setCroppedAreaPixels(null);
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        setFoto(img);
+        // Hitung scale agar foto fit di dalam area frame twibbon
+
+        // Jika ada overlay (frame twibbon), hitung area yang bisa digunakan
+        if (overlay) {
+          // Hitung canvas size berdasarkan frame ratio
+          const maxSize = 500;
+          let canvasWidth, canvasHeight;
+
+          if (frameRatio.width > frameRatio.height) {
+            canvasWidth = maxSize;
+            canvasHeight = (maxSize * frameRatio.height) / frameRatio.width;
+          } else {
+            canvasHeight = maxSize;
+            canvasWidth = (maxSize * frameRatio.width) / frameRatio.height;
+          }
+
+          // Foto harus mengisi seluruh area frame
+          const frameAreaSize = Math.min(canvasWidth, canvasHeight) * 0.8; // 80% dari canvas
+          const scaleX = frameAreaSize / img.width;
+          const scaleY = frameAreaSize / img.height;
+          const scale = Math.min(scaleX, scaleY) * 1.1; // 1.1 untuk memastikan mengisi area
+
+          // Center di tengah canvas
+          const scaledWidth = img.width * scale;
+          const scaledHeight = img.height * scale;
+          const centerX = canvasWidth / 2;
+          const centerY = canvasHeight / 2;
+
+          setPos({
+            x: centerX - scaledWidth / 2, // Center horizontal
+            y: centerY - scaledHeight / 2, // Center vertikal
+            scale: scale,
+            rotation: 0,
+          });
+        } else {
+          // Fallback jika belum ada overlay
+          const maxSize = 500;
+          let canvasWidth, canvasHeight;
+
+          if (frameRatio.width > frameRatio.height) {
+            canvasWidth = maxSize;
+            canvasHeight = (maxSize * frameRatio.height) / frameRatio.width;
+          } else {
+            canvasHeight = maxSize;
+            canvasWidth = (maxSize * frameRatio.width) / frameRatio.height;
+          }
+
+          const scaleX = canvasWidth / img.width;
+          const scaleY = canvasHeight / img.height;
+          const scale = Math.min(scaleX, scaleY) * 0.8;
+
+          const scaledWidth = img.width * scale;
+          const scaledHeight = img.height * scale;
+
+          setPos({
+            x: (canvasWidth - scaledWidth) / 2,
+            y: (canvasHeight - scaledHeight) / 2,
+            scale: scale,
+            rotation: 0,
+          });
+        }
       };
-      reader.readAsDataURL(file);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Load twibbon frame as overlay
+  useEffect(() => {
+    if (twibbon?.filename) {
+      const img = new window.Image();
+      img.src = `/api/images/uploads/${twibbon.filename}`;
+      img.onload = () => {
+        setOverlay(img);
+        // Jika sudah ada foto, atur ulang posisinya agar fit di frame
+        if (foto) {
+          const maxSize = 500;
+          let canvasWidth, canvasHeight;
+
+          if (frameRatio.width > frameRatio.height) {
+            canvasWidth = maxSize;
+            canvasHeight = (maxSize * frameRatio.height) / frameRatio.width;
+          } else {
+            canvasHeight = maxSize;
+            canvasWidth = (maxSize * frameRatio.width) / frameRatio.height;
+          }
+
+          const frameAreaSize = Math.min(canvasWidth, canvasHeight) * 0.8; // 80% dari canvas
+          const scaleX = frameAreaSize / foto.width;
+          const scaleY = frameAreaSize / foto.height;
+          const scale = Math.min(scaleX, scaleY) * 1.1; // 1.1 untuk memastikan mengisi area
+
+          const scaledWidth = foto.width * scale;
+          const scaledHeight = foto.height * scale;
+
+          // Center di tengah canvas
+          const centerX = canvasWidth / 2;
+          const centerY = canvasHeight / 2;
+
+          setPos({
+            x: centerX - scaledWidth / 2, // Center horizontal
+            y: centerY - scaledHeight / 2, // Center vertikal
+            scale: scale,
+            rotation: 0,
+          });
+        }
+      };
+    }
+  }, [twibbon?.filename, foto, frameRatio.width, frameRatio.height]);
+
+  const draw = () => {
+    if (!canvasRef.current) return;
+    const ctx = canvasRef.current.getContext("2d");
+    if (!ctx) return;
+
+    // Set canvas size to match frame ratio
+    const maxSize = 500;
+    let canvasWidth, canvasHeight;
+
+    if (frameRatio.width > frameRatio.height) {
+      // Landscape
+      canvasWidth = maxSize;
+      canvasHeight = (maxSize * frameRatio.height) / frameRatio.width;
+    } else {
+      // Portrait or Square
+      canvasHeight = maxSize;
+      canvasWidth = (maxSize * frameRatio.width) / frameRatio.height;
+    }
+
+    canvasRef.current.width = canvasWidth;
+    canvasRef.current.height = canvasHeight;
+
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+    if (foto) {
+      const w = foto.width * pos.scale;
+      const h = foto.height * pos.scale;
+
+      ctx.save();
+      ctx.translate(pos.x + w / 2, pos.y + h / 2); // pindah ke tengah gambar
+      ctx.rotate((pos.rotation * Math.PI) / 180); // rotasi
+      // Draw image dengan aspect ratio yang benar - tidak stretch
+      ctx.drawImage(foto, -w / 2, -h / 2, w, h);
+      ctx.restore();
+    }
+
+    if (overlay) {
+      // Draw overlay dengan aspect ratio yang benar - tidak stretch
+      const scaleX = canvasWidth / overlay.width;
+      const scaleY = canvasHeight / overlay.height;
+      const scale = Math.min(scaleX, scaleY);
+
+      // Hitung ukuran dan posisi yang benar
+      const scaledWidth = overlay.width * scale;
+      const scaledHeight = overlay.height * scale;
+      const x = (canvasWidth - scaledWidth) / 2;
+      const y = (canvasHeight - scaledHeight) / 2;
+
+      ctx.drawImage(overlay, x, y, scaledWidth, scaledHeight);
     }
   };
 
-  const onCropComplete = useCallback((_: unknown, areaPixels: CropArea) => {
-    setCroppedAreaPixels(areaPixels);
-  }, []);
+  useEffect(() => {
+    draw();
+  });
 
-  const detectPhotoArea = (canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) => {
-    // Get image data to analyze transparency
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
+  // ================= DESKTOP (mouse + scroll) =================
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!foto) return;
+    setDragging(true);
+    setOffset({
+      x: e.nativeEvent.offsetX - pos.x,
+      y: e.nativeEvent.offsetY - pos.y,
+    });
+  };
 
-    let minX = canvas.width;
-    let minY = canvas.height;
-    let maxX = 0;
-    let maxY = 0;
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!dragging) return;
+    setPos((prev) => ({
+      ...prev,
+      x: e.nativeEvent.offsetX - offset.x,
+      y: e.nativeEvent.offsetY - offset.y,
+    }));
+  };
 
-    // Scan for transparent areas (alpha < 255)
-    for (let y = 0; y < canvas.height; y++) {
-      for (let x = 0; x < canvas.width; x++) {
-        const index = (y * canvas.width + x) * 4;
-        const alpha = data[index + 3];
+  const handleMouseUp = () => setDragging(false);
 
-        // If pixel is transparent or very light
-        if (alpha < 200) {
-          minX = Math.min(minX, x);
-          minY = Math.min(minY, y);
-          maxX = Math.max(maxX, x);
-          maxY = Math.max(maxY, y);
-        }
-      }
+  const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
+    if (!foto) return;
+    e.preventDefault();
+
+    if (e.shiftKey) {
+      // rotate dengan shift + scroll
+      setPos((prev) => ({
+        ...prev,
+        rotation: prev.rotation + (e.deltaY < 0 ? 5 : -5),
+      }));
+    } else {
+      // zoom normal
+      const scaleFactor = e.deltaY < 0 ? 1.05 : 0.95;
+      setPos((prev) => ({
+        ...prev,
+        scale: Math.max(0.1, prev.scale * scaleFactor),
+      }));
     }
+  };
 
-    // If no transparent area found, use default area
-    if (minX >= maxX || minY >= maxY) {
-      return {
-        x: canvas.width * 0.1,
-        y: canvas.height * 0.2,
-        width: canvas.width * 0.8,
-        height: canvas.height * 0.6,
-      };
+  // ================= MOBILE (touch gestures) =================
+  const getDistance = (t1: AnyTouch, t2: AnyTouch) => Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+
+  const getAngle = (t1: AnyTouch, t2: AnyTouch) => (Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180) / Math.PI;
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!foto) return;
+    if (e.touches.length === 1) {
+      // drag
+      const t = e.touches[0];
+      setDragging(true);
+      setOffset({ x: t.clientX - pos.x, y: t.clientY - pos.y });
+    } else if (e.touches.length === 2) {
+      // pinch & rotate
+      const dist = getDistance(e.touches[0], e.touches[1]);
+      const angle = getAngle(e.touches[0], e.touches[1]);
+      setLastTouchDist(dist);
+      setLastTouchAngle(angle);
     }
+  };
 
-    return {
-      x: minX,
-      y: minY,
-      width: maxX - minX,
-      height: maxY - minY,
-    };
+  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!foto) return;
+    if (e.touches.length === 1 && dragging) {
+      const t = e.touches[0];
+      setPos((prev) => ({
+        ...prev,
+        x: t.clientX - offset.x,
+        y: t.clientY - offset.y,
+      }));
+    } else if (e.touches.length === 2 && lastTouchDist && lastTouchAngle !== null) {
+      const newDist = getDistance(e.touches[0], e.touches[1]);
+      const newAngle = getAngle(e.touches[0], e.touches[1]);
+
+      setPos((prev) => ({
+        ...prev,
+        scale: Math.max(0.1, prev.scale * (newDist / lastTouchDist)),
+        rotation: prev.rotation + (newAngle - lastTouchAngle),
+      }));
+
+      setLastTouchDist(newDist);
+      setLastTouchAngle(newAngle);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setDragging(false);
+    setLastTouchDist(null);
+    setLastTouchAngle(null);
   };
 
   const createTwibbon = async () => {
-    if (!twibbon || !userImage || !canvasRef.current || !croppedAreaPixels) return;
+    if (!twibbon || !foto || !canvasRef.current) return;
 
     setProcessing(true);
 
     try {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
+      // Create a new canvas for download with proper dimensions
+      const downloadCanvas = document.createElement("canvas");
+      const downloadCtx = downloadCanvas.getContext("2d");
+      if (!downloadCtx) return;
 
       // Set canvas size based on frame ratio
       const maxSize = 800;
@@ -172,42 +375,68 @@ export default function TwibbonDetail() {
         canvasWidth = (maxSize * frameRatio.width) / frameRatio.height;
       }
 
-      canvas.width = canvasWidth;
-      canvas.height = canvasHeight;
+      downloadCanvas.width = canvasWidth;
+      downloadCanvas.height = canvasHeight;
 
-      // Load twibbon frame
-      const frameImg = new window.Image();
-      frameImg.crossOrigin = "anonymous";
-      frameImg.onload = () => {
-        // Detect the photo area in the twibbon
-        const photoArea = detectPhotoArea(canvas, ctx);
+      // Clear canvas
+      downloadCtx.clearRect(0, 0, downloadCanvas.width, downloadCanvas.height);
 
-        // Load user image
-        const userImg = new window.Image();
-        userImg.crossOrigin = "anonymous";
-        userImg.onload = () => {
-          // Draw the cropped user image first (as background)
-          ctx.drawImage(userImg, croppedAreaPixels.x, croppedAreaPixels.y, croppedAreaPixels.width, croppedAreaPixels.height, photoArea.x, photoArea.y, photoArea.width, photoArea.height);
+      // Calculate scale factors to match the preview canvas
+      const maxPreviewSize = 500;
+      let previewWidth, previewHeight;
 
-          // Then draw the twibbon frame on top (this will overlay the frame)
-          ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+      if (frameRatio.width > frameRatio.height) {
+        previewWidth = maxPreviewSize;
+        previewHeight = (maxPreviewSize * frameRatio.height) / frameRatio.width;
+      } else {
+        previewHeight = maxPreviewSize;
+        previewWidth = (maxPreviewSize * frameRatio.width) / frameRatio.height;
+      }
 
-          // Download using Safari-friendly utility
-          downloadCanvasImage(canvas, {
-            filename: `twibbon-${twibbon.name}.png`,
-            title: `Twibbon - ${twibbon.name}`,
-            description: "Twibbon Anda berhasil dibuat! Simpan gambar ini ke galeri atau bagikan ke teman-teman.",
-          });
+      const scaleX = canvasWidth / previewWidth;
+      const scaleY = canvasHeight / previewHeight;
+      const scale = Math.min(scaleX, scaleY);
 
-          // Update download count
-          updateDownloadCount();
+      // Draw the user image first (as background) with scaled positioning
+      if (foto) {
+        const w = foto.width * pos.scale * scale;
+        const h = foto.height * pos.scale * scale;
+        const scaledX = pos.x * scale;
+        const scaledY = pos.y * scale;
 
-          // Show share layout
-          setShowShareLayout(true);
-        };
-        userImg.src = userImage;
-      };
-      frameImg.src = `/api/images/uploads/${twibbon.filename}`;
+        downloadCtx.save();
+        downloadCtx.translate(scaledX + w / 2, scaledY + h / 2);
+        downloadCtx.rotate((pos.rotation * Math.PI) / 180);
+        downloadCtx.drawImage(foto, -w / 2, -h / 2, w, h);
+        downloadCtx.restore();
+      }
+
+      // Then draw the twibbon frame on top
+      if (overlay) {
+        const frameScaleX = canvasWidth / overlay.width;
+        const frameScaleY = canvasHeight / overlay.height;
+        const frameScale = Math.min(frameScaleX, frameScaleY);
+
+        const scaledWidth = overlay.width * frameScale;
+        const scaledHeight = overlay.height * frameScale;
+        const x = (canvasWidth - scaledWidth) / 2;
+        const y = (canvasHeight - scaledHeight) / 2;
+
+        downloadCtx.drawImage(overlay, x, y, scaledWidth, scaledHeight);
+      }
+
+      // Download using Safari-friendly utility
+      downloadCanvasImage(downloadCanvas, {
+        filename: `twibbon-${twibbon.name}.png`,
+        title: `Twibbon - ${twibbon.name}`,
+        description: "Twibbon Anda berhasil dibuat! Simpan gambar ini ke galeri atau bagikan ke teman-teman.",
+      });
+
+      // Update download count
+      updateDownloadCount();
+
+      // Show share layout
+      setShowShareLayout(true);
     } catch (error) {
       console.error("Error creating twibbon:", error);
     } finally {
@@ -386,7 +615,7 @@ export default function TwibbonDetail() {
             {/* Title */}
             <h1 className="text-2xl font-bold text-gray-900 mb-8 leading-tight text-center px-4">{twibbon.name}</h1>
 
-            {/* Twibbon Frame with Cropper */}
+            {/* Twibbon Frame with Canvas Cropper */}
             <div className="mb-8">
               <div
                 className="relative rounded-xl overflow-hidden w-full bg-gray-100"
@@ -395,43 +624,26 @@ export default function TwibbonDetail() {
                   maxHeight: "500px",
                 }}
               >
-                {userImage ? (
-                  <div className="relative w-full h-full">
-                    <Cropper
-                      image={userImage}
-                      crop={crop}
-                      zoom={zoom}
-                      aspect={frameRatio.width / frameRatio.height}
-                      onCropChange={setCrop}
-                      onZoomChange={setZoom}
-                      onCropComplete={onCropComplete}
-                      showGrid={false}
+                {foto ? (
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    <canvas
+                      ref={canvasRef}
+                      width={500}
+                      height={500}
+                      className="border rounded shadow touch-none w-full max-w-sm max-h-80"
                       style={{
-                        containerStyle: {
-                          width: "100%",
-                          height: "100%",
-                          backgroundColor: "transparent",
-                        },
-                        cropAreaStyle: {
-                          border: "2px solid #fff",
-                          boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.3)",
-                        },
+                        aspectRatio: `${frameRatio.width} / ${frameRatio.height}`,
+                        maxHeight: "500px",
                       }}
+                      onMouseDown={handleMouseDown}
+                      onMouseMove={handleMouseMove}
+                      onMouseUp={handleMouseUp}
+                      onMouseLeave={handleMouseUp}
+                      onWheel={handleWheel}
+                      onTouchStart={handleTouchStart}
+                      onTouchMove={handleTouchMove}
+                      onTouchEnd={handleTouchEnd}
                     />
-                    {/* Twibbon Frame Overlay */}
-                    <div className="absolute inset-0 pointer-events-none">
-                      <Image
-                        src={`/api/images/uploads/${twibbon.filename}` || "/images/placeholder.png"}
-                        alt={twibbon.name}
-                        fill
-                        className="object-contain"
-                        onError={(e) => {
-                          console.error("Image failed to load:", twibbon.url);
-                          const target = e.target as HTMLImageElement;
-                          target.src = "/images/placeholder.png";
-                        }}
-                      />
-                    </div>
                   </div>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
@@ -452,22 +664,52 @@ export default function TwibbonDetail() {
             </div>
 
             {/* Crop Controls */}
-            {userImage && (
-              <div className="mb-6 p-4  rounded-xl">
+            {foto && (
+              <div className="mb-6 p-4 rounded-xl">
                 <h3 className="text-lg font-semibold mb-4 text-center text-black">Atur Foto Anda</h3>
 
                 {/* Zoom Slider */}
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Zoom In/Out</label>
-                  <input type="range" min={1} max={3} step={0.1} value={zoom} onChange={(e) => setZoom(Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+                  <input
+                    type="range"
+                    min={0.1}
+                    max={3}
+                    step={0.1}
+                    value={pos.scale}
+                    onChange={(e) => setPos((prev) => ({ ...prev, scale: Number(e.target.value) }))}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
                   <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>1x</span>
-                    <span>{zoom.toFixed(1)}x</span>
+                    <span>0.1x</span>
+                    <span>{pos.scale.toFixed(1)}x</span>
                     <span>3x</span>
                   </div>
                 </div>
 
-                <p className="text-xs text-gray-500 text-center">Drag dan zoom foto untuk mengatur posisi di dalam frame</p>
+                {/* Rotation Slider */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Rotasi</label>
+                  <input
+                    type="range"
+                    min={-180}
+                    max={180}
+                    step={5}
+                    value={pos.rotation}
+                    onChange={(e) => setPos((prev) => ({ ...prev, rotation: Number(e.target.value) }))}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>-180°</span>
+                    <span>{pos.rotation}°</span>
+                    <span>180°</span>
+                  </div>
+                </div>
+
+                <p className="text-xs text-gray-500 text-center">
+                  🖱 Drag = geser | Scroll = zoom | Shift+Scroll = rotate <br />
+                  📱 1 jari = drag | 2 jari pinch = zoom | 2 jari putar = rotate
+                </p>
               </div>
             )}
 
@@ -491,11 +733,11 @@ export default function TwibbonDetail() {
               whileTap={{ scale: 0.98 }}
             >
               <Image src="/images/icon-foto.png" alt="Foto" width={24} height={24} className="mr-3 w-6 h-6" />
-              {userImage ? "Ganti Foto" : "Pilih Foto"}
+              {foto ? "Ganti Foto" : "Pilih Foto"}
             </motion.button>
 
             {/* Create Twibbon Button */}
-            {userImage && (
+            {foto && (
               <motion.button
                 onClick={createTwibbon}
                 disabled={processing}
