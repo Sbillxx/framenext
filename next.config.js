@@ -1,15 +1,15 @@
 /** @type {import('next').NextConfig} */
-
-module.exports = {
+const nextConfig = {
+  // Tambahkan eksperimen jika kamu membutuhkannya
   experimental: {
     serverActions: {
-      bodySizeLimit: "10mb", // Increase to 10MB for twibbon uploads
+      bodySizeLimit: "10mb",
     },
   },
-  // Also configure API routes body size limit
-  api: {
-    bodyParser: {
-      sizeLimit: "10mb",
-    },
-  },
+
+  // Konfigurasi untuk Next.js versi 13 ke atas
+  // Tidak perlu lagi menulis "api" dan "bodyParser"
+  // Next.js secara otomatis menangani ini
 };
+
+module.exports = nextConfig;
