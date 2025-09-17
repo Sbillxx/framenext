@@ -15,6 +15,10 @@ export default function CroppingModal({ twibbonFrame, onClose, onCropComplete }:
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [foto, setFoto] = useState<HTMLImageElement | null>(null);
   const [overlay, setOverlay] = useState<HTMLImageElement | null>(null);
+  const [frameRatio, setFrameRatio] = useState<{
+    width: number;
+    height: number;
+  }>({ width: 1, height: 1 });
 
   // posisi & transformasi foto
   const [pos, setPos] = useState({ x: 0, y: 0, scale: 1, rotation: 0 });
@@ -36,38 +40,62 @@ export default function CroppingModal({ twibbonFrame, onClose, onCropComplete }:
       img.onload = () => {
         setFoto(img);
         // Hitung scale agar foto fit di dalam area frame twibbon
-        const canvasSize = 500;
 
         // Jika ada overlay (frame twibbon), hitung area yang bisa digunakan
         if (overlay) {
-          // Hitung area frame yang bisa digunakan (misalnya 60% dari canvas)
-          const frameAreaSize = canvasSize * 0.6;
+          // Hitung canvas size berdasarkan frame ratio
+          const maxSize = 500;
+          let canvasWidth, canvasHeight;
+
+          if (frameRatio.width > frameRatio.height) {
+            canvasWidth = maxSize;
+            canvasHeight = (maxSize * frameRatio.height) / frameRatio.width;
+          } else {
+            canvasHeight = maxSize;
+            canvasWidth = (maxSize * frameRatio.width) / frameRatio.height;
+          }
+
+          // Foto harus mengisi seluruh area frame
+          const frameAreaSize = Math.min(canvasWidth, canvasHeight) * 0.8; // 80% dari canvas
           const scaleX = frameAreaSize / img.width;
           const scaleY = frameAreaSize / img.height;
-          const scale = Math.min(scaleX, scaleY) * 0.8; // 0.8 untuk margin
+          const scale = Math.min(scaleX, scaleY) * 1.1; // 1.1 untuk memastikan mengisi area
 
-          // Center the image
+          // Center di tengah canvas
           const scaledWidth = img.width * scale;
           const scaledHeight = img.height * scale;
+          const centerX = canvasWidth / 2;
+          const centerY = canvasHeight / 2;
 
           setPos({
-            x: (canvasSize - scaledWidth) / 2,
-            y: (canvasSize - scaledHeight) / 2,
+            x: centerX - scaledWidth / 2, // Center horizontal
+            y: centerY - scaledHeight / 2, // Center vertikal
             scale: scale,
             rotation: 0,
           });
         } else {
           // Fallback jika belum ada overlay
-          const scaleX = canvasSize / img.width;
-          const scaleY = canvasSize / img.height;
-          const scale = Math.min(scaleX, scaleY) * 0.6;
+          const maxSize = 500;
+          let canvasWidth, canvasHeight;
+
+          if (frameRatio.width > frameRatio.height) {
+            canvasWidth = maxSize;
+            canvasHeight = (maxSize * frameRatio.height) / frameRatio.width;
+          } else {
+            canvasHeight = maxSize;
+            canvasWidth = (maxSize * frameRatio.width) / frameRatio.height;
+          }
+
+          const scaleX = canvasWidth / img.width;
+          const scaleY = canvasHeight / img.height;
+          const scale = Math.min(scaleX, scaleY) * 0.8;
 
           const scaledWidth = img.width * scale;
           const scaledHeight = img.height * scale;
 
           setPos({
-            x: (canvasSize - scaledWidth) / 2,
-            y: (canvasSize - scaledHeight) / 2,
+            x: (canvasWidth - scaledWidth) / 2,
+            y: (canvasHeight - scaledHeight) / 2,
             scale: scale,
             rotation: 0,
           });
@@ -83,32 +111,67 @@ export default function CroppingModal({ twibbonFrame, onClose, onCropComplete }:
     img.src = twibbonFrame;
     img.onload = () => {
       setOverlay(img);
+      // Set frame ratio
+      setFrameRatio({ width: img.width, height: img.height });
+
       // Jika sudah ada foto, atur ulang posisinya agar fit di frame
       if (foto) {
-        const canvasSize = 500;
-        const frameAreaSize = canvasSize * 0.6;
+        const maxSize = 500;
+        let canvasWidth, canvasHeight;
+
+        if (frameRatio.width > frameRatio.height) {
+          canvasWidth = maxSize;
+          canvasHeight = (maxSize * frameRatio.height) / frameRatio.width;
+        } else {
+          canvasHeight = maxSize;
+          canvasWidth = (maxSize * frameRatio.width) / frameRatio.height;
+        }
+
+        const frameAreaSize = Math.min(canvasWidth, canvasHeight) * 0.8; // 80% dari canvas
         const scaleX = frameAreaSize / foto.width;
         const scaleY = frameAreaSize / foto.height;
-        const scale = Math.min(scaleX, scaleY) * 0.8;
+        const scale = Math.min(scaleX, scaleY) * 1.1; // 1.1 untuk memastikan mengisi area
 
         const scaledWidth = foto.width * scale;
         const scaledHeight = foto.height * scale;
 
+        // Center di tengah canvas
+        const centerX = canvasWidth / 2;
+        const centerY = canvasHeight / 2;
+
         setPos({
-          x: (canvasSize - scaledWidth) / 2,
-          y: (canvasSize - scaledHeight) / 2,
+          x: centerX - scaledWidth / 2, // Center horizontal
+          y: centerY - scaledHeight / 2, // Center vertikal
           scale: scale,
           rotation: 0,
         });
       }
     };
-  }, [twibbonFrame, foto]);
+  }, [twibbonFrame, foto, frameRatio.width, frameRatio.height]);
 
   const draw = () => {
     if (!canvasRef.current) return;
     const ctx = canvasRef.current.getContext("2d");
     if (!ctx) return;
-    ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+
+    // Set canvas size to match frame ratio
+    const maxSize = 500;
+    let canvasWidth, canvasHeight;
+
+    if (frameRatio.width > frameRatio.height) {
+      // Landscape
+      canvasWidth = maxSize;
+      canvasHeight = (maxSize * frameRatio.height) / frameRatio.width;
+    } else {
+      // Portrait or Square
+      canvasHeight = maxSize;
+      canvasWidth = (maxSize * frameRatio.width) / frameRatio.height;
+    }
+
+    canvasRef.current.width = canvasWidth;
+    canvasRef.current.height = canvasHeight;
+
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
     if (foto) {
       const w = foto.width * pos.scale;
@@ -124,10 +187,6 @@ export default function CroppingModal({ twibbonFrame, onClose, onCropComplete }:
 
     if (overlay) {
       // Draw overlay dengan aspect ratio yang benar - tidak stretch
-      const canvasWidth = canvasRef.current.width;
-      const canvasHeight = canvasRef.current.height;
-
-      // Hitung scale agar overlay fit tanpa stretch
       const scaleX = canvasWidth / overlay.width;
       const scaleY = canvasHeight / overlay.height;
       const scale = Math.min(scaleX, scaleY);
@@ -291,7 +350,10 @@ export default function CroppingModal({ twibbonFrame, onClose, onCropComplete }:
                 width={500}
                 height={500}
                 className="border rounded shadow touch-none w-full max-w-sm sm:max-w-md max-h-80 sm:max-h-96"
-                style={{ aspectRatio: "1/1" }}
+                style={{
+                  aspectRatio: `${frameRatio.width} / ${frameRatio.height}`,
+                  maxHeight: "500px",
+                }}
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
